@@ -731,6 +731,29 @@ div.hashtags {
 button:focus {
 	outline: none;
 }
+#book {
+	border: 3px solid #43deff;
+	border-radius: 4px;
+    padding: 15px 30px;
+    font-size: 14px;
+    background-color: transparent;
+    margin: 2.5rem 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #43deff;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Raleway', sans-serif;
+}
+#book:hover {
+	border-color: #e65013;
+    background-color: transparent;
+    color: #e65013;
+    transition: all .4s ease;
+}
+button:focus {
+	outline: none;
+}
 
 /* -------- CONTACT SECTION -------- */
 .contact-content {
