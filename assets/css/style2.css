@@ -708,19 +708,28 @@ div.hashtags {
 	cursor: url('http://www.elhadjindour.com/assets/imgs/php.svg'), auto);
 	cursor: url('http://www.elhadjindour.com/assets/imgs/php.cur'), auto);
 }
-#cv {
-	border: 3px solid #43deff;
-	border-radius: 4px;
-    padding: 15px 30px;
-    font-size: 14px;
-    background-color: transparent;
-    margin: 2.5rem 0 0 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #43deff;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Raleway', sans-serif;
+.cta-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem; /* espace entre les boutons */
+  margin-top: 2rem;
+}
+#cv, #book {
+  border: 3px solid #43deff;
+  border-radius: 4px;
+  padding: 15px 30px;
+  font-size: 14px;
+  background-color: transparent;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #43deff;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  text-align: center;
+  display: inline-block;
 }
 #cv:hover {
 	border-color: #e65013;
@@ -731,30 +740,7 @@ div.hashtags {
 button:focus {
 	outline: none;
 }
-#book {
-	border: 3px solid #43deff;
-	border-radius: 4px;
-    padding: 15px 30px;
-    font-size: 14px;
-    background-color: transparent;
-    margin: 2.5rem 0 0 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #43deff;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Raleway', sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* espace entre les boutons */
-    align-items: center;
-}
-#book:hover {
-	border-color: #e65013;
-    background-color: transparent;
-    color: #e65013;
-    transition: all .4s ease;
-}
+
 button:focus {
 	outline: none;
 }
