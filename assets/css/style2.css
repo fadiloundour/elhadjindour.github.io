@@ -744,6 +744,10 @@ button:focus {
     font-weight: 500;
     cursor: pointer;
     font-family: 'Raleway', sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* espace entre les boutons */
+    align-items: center;
 }
 #book:hover {
 	border-color: #e65013;
