@@ -712,16 +712,17 @@ div.hashtags {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem; /* espace entre les boutons */
+  gap: 1rem;
   margin-top: 2rem;
 }
+
+/* Boutons communs */
 #cv, #book {
   border: 3px solid #43deff;
   border-radius: 4px;
   padding: 15px 30px;
   font-size: 14px;
   background-color: transparent;
-  margin: 0;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #43deff;
@@ -730,15 +731,22 @@ div.hashtags {
   font-family: 'Raleway', sans-serif;
   text-align: center;
   display: inline-block;
+  transition: all 0.4s ease;
 }
-#cv, #book:hover {
-	border-color: #e65013;
-    background-color: transparent;
-    color: #e65013;
-    transition: all .4s ease;
+
+/* Hover */
+#cv:hover,
+#book:hover {
+  border-color: #e65013;
+  color: #e65013;
 }
-button:focus {
-	outline: none;
+
+/* Responsive : à partir de 768px (tablette et +), côte à côte */
+@media (min-width: 768px) {
+  .cta-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
 }
 
 button:focus {
