@@ -731,7 +731,7 @@ div.hashtags {
   text-align: center;
   display: inline-block;
 }
-#cv:hover {
+#cv, #book:hover {
 	border-color: #e65013;
     background-color: transparent;
     color: #e65013;
