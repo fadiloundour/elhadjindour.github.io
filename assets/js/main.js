@@ -533,6 +533,45 @@
   });
   $$('[data-open-case]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openCase(b.dataset.openCase); }));
 
+  /* ---------- Accueil : photo qui suit la souris ---------- */
+  (() => {
+    const vis = $('.hero__visual'); if (!vis) return;
+    $$('.hand-note svg path', vis).forEach(p => p.setAttribute('pathLength', '1'));
+    // compteur du badge « +4 ans »
+    const badge = $('.float-card--b b', vis);
+    if (badge && !mqReduce.matches) {
+      const m = badge.textContent.match(/(\D*)(\d+)(.*)/);
+      if (m) {
+        const end = +m[2]; badge.textContent = m[1] + '0' + m[3];
+        const start = () => { const t0 = performance.now();
+          const step = now => { const k = Math.min(1, (now - t0) / 1400), e = 1 - Math.pow(1 - k, 3);
+            badge.textContent = m[1] + Math.round(end * e) + m[3]; if (k < 1) requestAnimationFrame(step); };
+          requestAnimationFrame(step); };
+        setTimeout(start, root.classList.contains('has-intro') ? 2600 : 900);
+      }
+    }
+    const fineP = matchMedia('(hover:hover) and (pointer:fine)');
+    if (!fineP.matches || mqReduce.matches) return;
+    root.classList.add('has-pointer');
+    const hero = $('#accueil');
+    let tx = 0, ty = 0, x = 0, y = 0, raf2 = 0;
+    const loop = () => {
+      x += (tx - x) * 0.08; y += (ty - y) * 0.08;
+      vis.style.setProperty('--mx', x.toFixed(3));
+      vis.style.setProperty('--my', y.toFixed(3));
+      vis.style.setProperty('--ry', (x * 10).toFixed(2) + 'deg');
+      vis.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
+      raf2 = (Math.abs(tx - x) + Math.abs(ty - y) > 0.001) ? requestAnimationFrame(loop) : 0;
+    };
+    hero.addEventListener('pointermove', e => {
+      const r = vis.getBoundingClientRect();
+      tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width * 1.2)));
+      ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height * 1.2)));
+      if (!raf2) raf2 = requestAnimationFrame(loop);
+    }, { passive: true });
+    hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!raf2) raf2 = requestAnimationFrame(loop); });
+  })();
+
   // Démarrage
   H = root.classList.contains('is-h');
   HM = root.classList.contains('is-hm');
