@@ -10,7 +10,9 @@ Site statique (HTML / CSS / JS, sans dépendance) prêt pour GitHub Pages et le 
 3. Cliquez sur **Add file → Upload files** et glissez **tout le contenu** de ce dossier (index.html, CNAME, robots.txt, sitemap.xml, le dossier assets).
 4. Cliquez sur **Commit changes**. Le site est à jour en 1 à 2 minutes.
 
-Le fichier `CNAME` contient déjà : `elhadjindour.fr`
+Adresse actuelle du site : https://fadiloundour.github.io/elhadjindour.github.io/
+
+Le domaine elhadjindour.fr n'est pas encore enregistré. Une fois acheté, ajoutez un fichier `CNAME` contenant `elhadjindour.fr` (ou renseignez le domaine dans Settings → Pages).
 
 ## Modifier un contenu
 
