@@ -855,3 +855,14 @@ html.has-intro:not(.has-pointer) .hero__visual{animation:heroPop .9s var(--ease-
   .hand-note svg path{stroke-dashoffset:0;animation:none!important}
 }
 .float-card--b,.hand-note{z-index:2}
+
+/* Réalisations : cartes vidéo (aperçu au survol + lecture dans la visionneuse) */
+.card--video .content-overlay,.card--video .content-details{display:none}
+.card__preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity .4s ease}
+.card--video.playing .card__preview{opacity:1}
+.play-badge{position:absolute;left:12px;bottom:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;
+  background:rgba(20,81,106,.85);color:#fff;font-size:.75rem;font-weight:600;backdrop-filter:blur(6px)}
+.play-badge svg{width:14px;height:14px;color:var(--cyan)}
+.lb__gallery figure.is-video{background:#0c0f12;place-items:center}
+.lb__gallery video{display:block;max-width:100%;max-height:calc(100dvh - 40px);width:auto;height:auto;aspect-ratio:9/16;background:#000}
+@media (max-width:1023px){.lb__gallery video{max-height:60dvh}}

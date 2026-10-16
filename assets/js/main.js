@@ -302,7 +302,18 @@
   $('#lb-next').addEventListener('click', () => lbStep(1));
   $('#lb-close').addEventListener('click', () => lightbox.close());
   lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.close(); });
-  lightbox.addEventListener('close', () => { document.body.style.overflow = ''; });
+  lightbox.addEventListener('close', () => { document.body.style.overflow = ''; $$('video', lbGal).forEach(v => v.pause()); });
+  // une seule vidéo à la fois dans la visionneuse
+  lbGal.addEventListener('play', e => { $$('video', lbGal).forEach(v => { if (v !== e.target) v.pause(); }); }, true);
+  lbGal.addEventListener('scroll', () => { const i = lbIndex(); $$('figure', lbGal).forEach((f, k) => { const v = f.querySelector('video'); if (v && k !== i) v.pause(); }); }, { passive: true });
+  // aperçu vidéo au survol des cartes
+  $$('#grid .card--video').forEach(c => {
+    const v = c.querySelector('.card__preview'); if (!v) return;
+    const on = () => { if (mqReduce.matches) return; v.play().then(() => c.classList.add('playing')).catch(() => {}); };
+    const off = () => { c.classList.remove('playing'); v.pause(); };
+    c.addEventListener('pointerenter', on); c.addEventListener('pointerleave', off);
+    c.addEventListener('focus', on); c.addEventListener('blur', off);
+  });
 
   cards.forEach(c => c.dataset.project && c.addEventListener('click', () => {
     const d = JSON.parse(c.dataset.project);
@@ -311,7 +322,9 @@
     $('#lb-desc').textContent = d.desc;
     $('#lb-tags').innerHTML = (d.tags || []).map(t => `<span class="chip">${t}</span>`).join('');
     lbGal.classList.toggle('tall', !!d.tall);
-    lbGal.innerHTML = d.gallery.map((src, i) => `<figure><img src="${src}" alt="${d.title} — visuel ${i + 1}" ${i ? 'loading="lazy"' : ''}></figure>`).join('');
+    lbGal.innerHTML = d.gallery.map((src, i) => (src && src.video)
+      ? `<figure class="is-video"><video src="${src.video}" poster="${src.poster || ''}" controls playsinline preload="${i ? 'none' : 'metadata'}" aria-label="${d.title} — vidéo ${i + 1}"></video></figure>`
+      : `<figure><img src="${src}" alt="${d.title} — visuel ${i + 1}" ${i ? 'loading="lazy"' : ''}></figure>`).join('');
     lbN = d.gallery.length;
     $('#lb-prev').hidden = $('#lb-next').hidden = lbN < 2;
     const link = $('#lb-link');
