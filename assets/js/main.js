@@ -330,7 +330,7 @@
     lbN = d.gallery.length;
     $('#lb-prev').hidden = $('#lb-next').hidden = lbN < 2;
     const link = $('#lb-link');
-    link.href = d.link; $('#lb-link-label').textContent = d.linkLabel || 'Behance';
+    link.hidden = !d.link; if (d.link) link.href = d.link; $('#lb-link-label').textContent = d.linkLabel || 'Behance';
     lightbox.showModal();
     document.body.style.overflow = 'hidden';
     lbGal.scrollLeft = 0; lbUpdate();

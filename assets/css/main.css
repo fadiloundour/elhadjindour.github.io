@@ -880,3 +880,4 @@ html.has-intro:not(.has-pointer) .hero__visual{animation:heroPop .9s var(--ease-
   .lightbox[open]{grid-template-rows:minmax(0,calc(100dvh - 26px));height:calc(100dvh - 26px)}
   .lb__gallery,.lb__info{min-height:0;max-height:100%}
 }
+#lb-link[hidden]{display:none!important}
