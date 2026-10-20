@@ -866,3 +866,9 @@ html.has-intro:not(.has-pointer) .hero__visual{animation:heroPop .9s var(--ease-
 .lb__gallery figure.is-video{background:#0c0f12;place-items:center}
 .lb__gallery video{display:block;max-width:100%;max-height:calc(100dvh - 40px);width:auto;height:auto;aspect-ratio:9/16;background:#000}
 @media (max-width:1023px){.lb__gallery video{max-height:60dvh}}
+/* Visionneuse : fiche de l'événement */
+.lb__facts{margin:0;display:grid;gap:12px}
+.lb__facts:empty{display:none}
+.lb__facts div{padding:12px 14px;border-left:3px solid var(--accent);background:var(--ink-2);border-radius:0 10px 10px 0}
+.lb__facts dt{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-strong);margin-bottom:4px}
+.lb__facts dd{margin:0;font-size:.92rem;line-height:1.5;color:var(--text-2)}

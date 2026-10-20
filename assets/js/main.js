@@ -320,6 +320,8 @@
     $('#lb-title').textContent = d.title;
     $('#lb-cat').textContent = d.label;
     $('#lb-desc').textContent = d.desc;
+    const facts = $('#lb-facts');
+    if (facts) facts.innerHTML = (d.details || []).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
     $('#lb-tags').innerHTML = (d.tags || []).map(t => `<span class="chip">${t}</span>`).join('');
     lbGal.classList.toggle('tall', !!d.tall);
     lbGal.innerHTML = d.gallery.map((src, i) => (src && src.video)
