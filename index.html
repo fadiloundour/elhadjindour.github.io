@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=202610201801">
+<link rel="stylesheet" href="assets/css/main.css?v=202610272310">
 <script>/* active le mode horizontal avant le premier rendu (évite le flash) */
 (function(){var d=document.documentElement;d.classList.add('js');try{if(!matchMedia('(prefers-reduced-motion:reduce)').matches&&!sessionStorage.getItem('introSeen'))d.classList.add('has-intro')}catch(e){}try{var m=matchMedia('(min-width:1024px) and (min-height:600px) and (hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches;if(m){document.documentElement.classList.add('is-h');if('scrollRestoration' in history)history.scrollRestoration='manual'}else if(matchMedia('(hover:none), (pointer:coarse)').matches){document.documentElement.classList.add('is-hm')}}catch(e){}})();</script>
 <script type="application/ld+json">
@@ -78,7 +78,13 @@
     <a href="#contact" data-goto="contact">Contact</a>
   </nav>
   <div class="header-cta">
-    <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour.pdf" download>CV <svg aria-hidden="true"><use href="#i-download"/></svg></a>
+    <details class="cv-menu">
+      <summary class="btn btn--solid">Mes CV <svg aria-hidden="true"><use href="#i-download"/></svg></summary>
+      <div class="cv-menu__list">
+        <a href="assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download><b>Communication digitale</b><small>Community management, social ads, contenus</small></a>
+        <a href="assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download><b>Graphiste &amp; motion designer</b><small>Identité visuelle, print, motion, montage</small></a>
+      </div>
+    </details>
     <button class="burger" aria-expanded="false" aria-controls="mobile-menu" aria-label="Ouvrir le menu"><svg viewBox="0 0 64 48" aria-hidden="true"><path d="M19,15 L45,15 C70,15 58,-2 49.0177126,7 L19,37"/><path d="M19,24 L45,24 C61.2371586,24 57,49 41,33 L32,24"/><path d="M45,33 L19,33 C-8,33 6,-2 22,14 L45,37"/></svg></button>
   </div>
 </header>
@@ -92,7 +98,8 @@
     <a href="#contact" data-goto="contact"><small>05</small><span class="t">Contact</span></a>
   </nav>
   <div class="hero__actions">
-    <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour.pdf" download>Télécharger mon CV <svg aria-hidden="true"><use href="#i-download"/></svg></a>
+    <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download>CV Communication digitale <svg aria-hidden="true"><use href="#i-download"/></svg></a>
+          <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download>CV Graphiste &amp; motion <svg aria-hidden="true"><use href="#i-download"/></svg></a>
     <a class="btn btn--ghost" href="mailto:mamefadilou@gmail.com">Me contacter</a>
   </div>
 </div>
@@ -141,7 +148,8 @@
         <p class="muted rv rv-d3">J'ai ensuite passé deux ans à l'ONFP comme community manager et graphiste. En 2023, je suis arrivé à Paris pour un Master à la Digital School of Paris, en alternance chez IFE Marketing. J'y suis resté : je suis en CDI depuis novembre 2025.</p>
         <p class="muted rv rv-d3">La photo et la vidéo restent mes premières passions. Aujourd'hui, je cherche une équipe où je pourrai mêler stratégie, création et un peu de code.</p>
         <div class="hero__actions rv rv-d4" style="margin-top:6px">
-          <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour.pdf" download>Télécharger mon CV <svg aria-hidden="true"><use href="#i-download"/></svg></a>
+          <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download>CV Communication digitale <svg aria-hidden="true"><use href="#i-download"/></svg></a>
+          <a class="btn btn--solid" href="assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download>CV Graphiste &amp; motion <svg aria-hidden="true"><use href="#i-download"/></svg></a>
           <a class="btn btn--ghost" href="assets/docs/Book-Elhadji-Ndour.pdf" target="_blank" rel="noopener">Feuilleter mon book <svg aria-hidden="true"><use href="#i-book"/></svg></a>
         </div>
       </div>
@@ -465,6 +473,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status"></div>
-<script src="assets/js/main.js?v=202610201801" defer></script>
+<script src="assets/js/main.js?v=202610272310" defer></script>
 </body>
 </html>

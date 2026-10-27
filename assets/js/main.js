@@ -599,3 +599,11 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
   addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && document.getElementById(id)) goTo(id); });
 })();
+
+/* Menu « Mes CV » : fermeture au clic extérieur / Échap / après choix */
+(() => {
+  const m = document.querySelector('.cv-menu'); if (!m) return;
+  document.addEventListener('click', e => { if (m.open && !m.contains(e.target)) m.open = false; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && m.open) { m.open = false; m.querySelector('summary').focus(); } });
+  m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setTimeout(() => m.open = false, 50)));
+})();
