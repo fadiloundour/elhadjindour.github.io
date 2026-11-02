@@ -56,15 +56,72 @@
   var parId = {};
   PRODUITS.forEach(function (p) { parId[p.id] = p; });
 
+  // ---------- backend Supabase (facultatif : voir assets/js/config.js) ----------
+  var CFG = window.SEDUCCESS_CONFIG || {};
+  var BACK = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+  var ZONES = [];
+  var enLigne = false;   // vrai quand le catalogue vient de la base
+  var rendu = false;     // la page est affichée : un catalogue arrivé trop tard est ignoré
+  function rpc(nom, args) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var t = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : 0;
+    return fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + nom, {
+      method: 'POST', signal: ctrl ? ctrl.signal : undefined,
+      headers: { apikey: CFG.supabaseAnonKey, Authorization: 'Bearer ' + CFG.supabaseAnonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(args || {})
+    }).then(function (r) {
+      clearTimeout(t);
+      return r.json().catch(function () { return null; }).then(function (d) {
+        if (!r.ok) { var e = new Error((d && d.message) || 'Le serveur ne répond pas.'); e.metier = r.status >= 400 && r.status < 500; throw e; }
+        return d;
+      });
+    });
+  }
+  function chargerCatalogue() {
+    if (!BACK) return Promise.resolve();
+    return rpc('catalogue_public').then(function (d) {
+      if (!d || !d.produits || !d.produits.length) return;
+      var liste = d.produits.map(function (p) {
+        return {
+          id: p.id, cat: p.cat, nom: p.nom, accroche: p.accroche || '', description: p.description || '',
+          notes: p.notes || [], composants: p.composants || [], usage: p.usage || '', precautions: p.precautions || '',
+          image: p.image || 'produit-thiouraye', alt: p.nom,
+          galerie: (p.galerie && p.galerie.length) ? p.galerie : [[p.image || 'produit-thiouraye', p.nom]],
+          formats: (p.formats || []).map(function (f) { return { id: f.id, nom: f.nom, note: f.note || '', prix: f.prix, prix_barre: f.prix_barre, disponible: f.disponible !== false, stock_faible: !!f.stock_faible }; })
+        };
+      }).filter(function (p) { return p.formats.length; });
+      if (!liste.length || rendu) return;
+      PRODUITS = liste; parId = {}; PRODUITS.forEach(function (p) { parId[p.id] = p; });
+      ZONES = d.zones || []; enLigne = true;
+    }).catch(function () { /* hors ligne : on garde le catalogue du site */ });
+  }
+  function delai(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
   // ---------- utilitaires ----------
   function fcfa(n) { return n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' FCFA'; }
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function prixMin(p) { return Math.min.apply(null, p.formats.map(function (f) { return f.prix; })); }
+  function srcImg(name, petit) {
+    if (/^https?:/.test(name)) return name;
+    return IMG + name + (petit && /^(produit-|savoir-matieres|savoir-parfum|resine|fondatrice)/.test(name) ? '-640' : '') + '.jpg';
+  }
   function picture(name, alt, cls, sizes) {
+    if (/^https?:/.test(name)) return '<img src="' + esc(name) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async"' + (cls ? ' class="' + cls + '"' : '') + ' width="1200" height="1200">';
     return '<picture><source type="image/webp" srcset="' + IMG + name + '-640.webp 640w, ' + IMG + name + '.webp 1200w" sizes="' + (sizes || '(max-width: 700px) 100vw, 400px') + '">' +
       '<img src="' + IMG + name + '-640.jpg" srcset="' + IMG + name + '-640.jpg 640w, ' + IMG + name + '.jpg 1200w" sizes="' + (sizes || '(max-width: 700px) 100vw, 400px') + '" alt="' + esc(alt) + '" loading="lazy" decoding="async"' + (cls ? ' class="' + cls + '"' : '') + ' width="1200" height="1200"></picture>';
+  }
+  function prixHtml(f, total) {
+    var q = total || 1;
+    return (f.prix_barre ? '<s class="barre-prix">' + fcfa(f.prix_barre * q) + '</s> ' : '') + fcfa(f.prix * q);
+  }
+  function disponibles(p) { return p.formats.filter(function (f) { return f.disponible !== false; }); }
+  function formatDe(x) {
+    var p = parId[x.id]; if (!p) return null;
+    var f = null;
+    if (x.fid) p.formats.forEach(function (g) { if (g.id === x.fid) f = g; });
+    return f || p.formats[x.fmt] || p.formats[0];
   }
   var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -75,8 +132,9 @@
   function nbArticles() { return lire().reduce(function (a, x) { return a + x.qte; }, 0); }
   function ajouter(id, fmt, qte) {
     var l = lire(), trouve = false;
-    l.forEach(function (x) { if (x.id === id && x.fmt === fmt) { x.qte = Math.min(20, x.qte + qte); trouve = true; } });
-    if (!trouve) l.push({ id: id, fmt: fmt, qte: qte });
+    var fid = parId[id] && parId[id].formats[fmt] ? parId[id].formats[fmt].id || null : null;
+    l.forEach(function (x) { if (x.id === id && (fid ? x.fid === fid : x.fmt === fmt)) { x.qte = Math.min(20, x.qte + qte); trouve = true; } });
+    if (!trouve) l.push({ id: id, fmt: fmt, fid: fid, qte: qte });
     ecrire(l);
     var p = parId[id];
     toast('Ajouté au sac · ' + p.nom);
@@ -169,15 +227,16 @@
 
   // ---------- carte produit ----------
   function carte(p, i) {
+    var dispo = disponibles(p), fmin = p.formats.reduce(function (a, f) { return f.prix < a.prix ? f : a; }, p.formats[0]);
     return '<article class="carte reveal" data-delai="' + (i * 90) + '">' +
       '<a class="carte-img" href="produit.html?p=' + p.id + '" aria-label="' + esc(p.nom) + ', voir le produit">' + picture(p.image, p.alt) + '</a>' +
       '<div class="carte-corps"><p class="eyebrow">' + esc(p.formats.map(function (f) { return f.nom; }).join(' / ')) + '</p>' +
       '<h3 class="h3"><a href="produit.html?p=' + p.id + '" style="color:inherit">' + esc(p.nom) + '</a></h3><p>' + esc(p.accroche) + '</p>' +
-      '<div class="carte-bas"><span class="prix">' + (p.formats.length > 1 ? 'Dès ' : '') + fcfa(prixMin(p)) + '</span>' +
-      '<button class="btn btn-ligne btn-sm" type="button" data-ajout="' + p.id + '" aria-label="Ajouter ' + esc(p.nom) + ' au sac">Ajouter</button></div></div></article>';
+      '<div class="carte-bas"><span class="prix">' + (p.formats.length > 1 ? 'Dès ' : '') + prixHtml(fmin) + '</span>' +
+      (dispo.length ? '<button class="btn btn-ligne btn-sm" type="button" data-ajout="' + p.id + '" data-fmt="' + p.formats.indexOf(dispo[0]) + '" aria-label="Ajouter ' + esc(p.nom) + ' au sac">Ajouter</button>' : '<span class="epuise">Épuisé</span>') + '</div></div></article>';
   }
   function brancherAjouts(racine) {
-    $$('[data-ajout]', racine).forEach(function (b) { b.addEventListener('click', function () { ajouter(b.dataset.ajout, 0, 1); confirmer(b, 'Ajouté'); }); });
+    $$('[data-ajout]', racine).forEach(function (b) { b.addEventListener('click', function () { ajouter(b.dataset.ajout, +(b.dataset.fmt || 0), 1); confirmer(b, 'Ajouté'); }); });
   }
 
   // ---------- accueil : produits qui défilent ----------
@@ -189,7 +248,10 @@
       i = n;
       imgs.forEach(function (im, k) { im.classList.toggle('on', k === i); });
       dots.forEach(function (d, k) { d.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
-      nom.textContent = imgs[i].dataset.nom; fmt.textContent = imgs[i].dataset.fmt;
+      var pr = parId[imgs[i].dataset.id];
+      nom.textContent = pr ? pr.nom : imgs[i].dataset.nom;
+      if (pr) { var fm = pr.formats.reduce(function (a, f) { return f.prix < a.prix ? f : a; }, pr.formats[0]); fmt.textContent = pr.formats.map(function (f) { return f.nom; }).join(' / ') + ' · ' + (pr.formats.length > 1 ? 'dès ' : '') + fcfa(fm.prix) + (disponibles(pr).length ? '' : ' · épuisé'); }
+      else fmt.textContent = imgs[i].dataset.fmt;
     }
     function lancer() { clearInterval(iv); if (!reduit) iv = setInterval(function () { aller((i + 1) % imgs.length); }, 5200); }
     dots.forEach(function (d, k) { d.addEventListener('click', function () { aller(k); lancer(); }); });
@@ -232,24 +294,25 @@
     var id = new URLSearchParams(location.search).get('p');
     var p = parId[id] || PRODUITS[0];
     document.title = p.nom + ' — Seduccess';
-    var fmt = 0, qte = 1, img = 0;
+    var fmt = Math.max(0, p.formats.indexOf(disponibles(p)[0])), qte = 1, img = 0;
     $('[data-fil-nom]').textContent = p.nom;
     zone.innerHTML =
       '<div class="rise"><div class="galerie-main">' + p.galerie.map(function (g, k) {
-        return '<img src="' + IMG + g[0] + '.jpg" alt="' + esc(g[1]) + '"' + (k === 0 ? ' class="on"' : ' loading="lazy"') + ' width="1200" height="1200">';
+        return '<img src="' + esc(srcImg(g[0])) + '" alt="' + esc(g[1]) + '"' + (k === 0 ? ' class="on"' : ' loading="lazy"') + ' width="1200" height="1200">';
       }).join('') + '</div>' +
       '<div class="vignettes" role="group" aria-label="Choisir une image">' + p.galerie.map(function (g, k) {
-        return '<button class="vignette" type="button" aria-pressed="' + (k === 0) + '" aria-label="Voir : ' + esc(g[1]) + '" data-img="' + k + '"><img src="' + IMG + g[0] + (g[0].indexOf('produit') === 0 || g[0] === 'savoir-matieres' || g[0] === 'savoir-parfum' || g[0] === 'resine' ? '-640' : '') + '.jpg" alt="" loading="lazy"></button>';
+        return '<button class="vignette" type="button" aria-pressed="' + (k === 0) + '" aria-label="Voir : ' + esc(g[1]) + '" data-img="' + k + '"><img src="' + esc(srcImg(g[0], true)) + '" alt="" loading="lazy"></button>';
       }).join('') + '</div></div>' +
       '<div class="achat">' +
         '<div><p class="eyebrow rise d1">Collection Signature</p><h1 class="display rise d1" style="font-size:clamp(42px,5vw,72px)">' + esc(p.nom) + '</h1>' +
         '<p class="lead rise d2" style="margin:16px 0 0">' + esc(p.accroche) + '</p></div>' +
         '<p class="rise d2" style="margin:0;color:var(--texte-doux)">' + esc(p.description) + '</p>' +
         (p.formats.length > 1 ? '<fieldset class="rise d2"><legend style="font-size:14px;font-weight:600">Format</legend><div class="formats">' + p.formats.map(function (f, k) {
-          return '<button class="format" type="button" aria-pressed="' + (k === 0) + '" data-fmt="' + k + '"><strong>' + esc(f.nom) + ' · ' + fcfa(f.prix) + '</strong><span>' + esc(f.note) + '</span></button>';
+          return '<button class="format" type="button" aria-pressed="' + (k === fmt) + '" data-fmt="' + k + '"' + (f.disponible === false ? ' disabled' : '') + '><strong>' + esc(f.nom) + ' · ' + prixHtml(f) + '</strong><span>' + (f.disponible === false ? 'Épuisé' : esc(f.note)) + '</span></button>';
         }).join('') + '</div></fieldset>' : '<p class="eyebrow rise d2" style="margin:0">' + esc(p.formats[0].nom) + '</p>') +
-        '<div class="ligne-prix rise d3"><span class="prix" data-prix>' + fcfa(p.formats[0].prix) + '</span>' +
+        '<div class="ligne-prix rise d3"><span class="prix" data-prix>' + prixHtml(p.formats[fmt]) + '</span>' +
           '<div class="qte" role="group" aria-label="Quantité"><button type="button" data-moins aria-label="Retirer un">−</button><output data-qte aria-live="polite">1</output><button type="button" data-plus aria-label="Ajouter un">+</button></div></div>' +
+        '<p class="muted rise d3" data-dispo style="margin:-12px 0 0;font-size:14px" aria-live="polite"></p>' +
         '<button class="btn btn-or rise d3" type="button" data-ajouter style="min-height:58px;font-size:17px">Ajouter au sac</button>' +
         '<a class="btn btn-wa rise d4" href="#" data-wa-produit><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.7 3.1.6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg>Commander sur WhatsApp</a>' +
         '<div class="accordeon rise d4">' +
@@ -269,7 +332,13 @@
     }
     vign.forEach(function (v) { v.addEventListener('click', function () { montrer(+v.dataset.img); }); });
     glisser($('.galerie-main', zone), function () { montrer(img - 1); }, function () { montrer(img + 1); });
-    function majPrix() { $('[data-prix]', zone).textContent = fcfa(p.formats[fmt].prix * qte); $('[data-qte]', zone).textContent = qte; majWa(); }
+    function majPrix() {
+      var f = p.formats[fmt], dispo = f.disponible !== false, b = $('[data-ajouter]', zone);
+      $('[data-prix]', zone).innerHTML = prixHtml(f, qte); $('[data-qte]', zone).textContent = qte;
+      $('[data-dispo]', zone).textContent = !dispo ? 'Ce format est épuisé pour le moment. Écrivez-nous sur WhatsApp pour être prévenu.' : f.stock_faible ? 'Plus que quelques pièces en stock.' : '';
+      b.disabled = !dispo; if (!b.classList.contains('ok')) b.textContent = dispo ? 'Ajouter au sac' : 'Épuisé';
+      majWa();
+    }
     function majWa() {
       var msg = 'Bonjour Seduccess, je souhaite commander : ' + qte + ' × ' + p.nom + ' (' + p.formats[fmt].nom + ') — ' + fcfa(p.formats[fmt].prix * qte) + '.';
       $('[data-wa-produit]', zone).href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
@@ -299,43 +368,77 @@
     var zone = $('[data-panier]');
     if (!zone) return;
     var liste = $('[data-lignes]'), vide = $('[data-vide]'), form = $('[data-commande]');
-    var premier = true;
+    var premier = true, sousTotal = 0, promo = null;
+    var selZone = $('#zone'), blocZones = $('[data-zones-bloc]'), blocPromo = $('[data-promo-bloc]');
+    if (enLigne && ZONES.length) {
+      blocZones.hidden = false;
+      selZone.innerHTML = '<option value="">Choisissez votre zone</option>' + ZONES.map(function (z) { return '<option value="' + z.id + '">' + esc(z.nom) + ' · ' + fcfa(z.frais) + (z.delai ? ' · ' + esc(z.delai) : '') + '</option>'; }).join('');
+      $('[data-livraison-note]').textContent = 'Frais selon votre zone';
+    }
+    if (enLigne) blocPromo.hidden = false;
+    function zoneChoisie() { var id = +selZone.value; var z = null; ZONES.forEach(function (x) { if (x.id === id) z = x; }); return z; }
+    function totaux() {
+      var mode = (form.querySelector('input[name="mode"]:checked') || {}).value, z = zoneChoisie();
+      var frais = mode === 'livraison' ? (z ? z.frais : null) : 0;
+      var remise = promo ? (promo.remise || 0) : 0;
+      $('[data-remise-l]').hidden = !remise;
+      $('[data-remise]').textContent = '− ' + fcfa(remise);
+      $('[data-remise-code]').textContent = promo ? promo.code : '';
+      $('[data-mode-label]').textContent = mode === 'livraison' ? 'Livraison' + (z ? ' · ' + z.nom : '') : 'Retrait';
+      $('[data-mode-prix]').textContent = mode === 'livraison' ? (frais === null ? (enLigne && ZONES.length ? 'Choisissez la zone' : 'Selon le quartier') : fcfa(frais)) : 'Offert';
+      $('[data-total-label]').textContent = frais === null ? 'Total articles' : 'Total à payer';
+      $('[data-total]').textContent = fcfa(sousTotal - remise + (frais || 0));
+    }
     function rendre() {
-      var l = lire();
+      var l = lire().filter(function (x) { return formatDe(x); });
       var n = l.reduce(function (a, x) { return a + x.qte; }, 0);
       $('[data-nb]').textContent = n ? n + (n > 1 ? ' articles' : ' article') : 'Aucun article';
       vide.hidden = l.length > 0;
       form.hidden = l.length === 0;
       liste.innerHTML = l.map(function (x, k) {
-        var p = parId[x.id], f = p.formats[x.fmt] || p.formats[0];
-        return '<li class="ligne' + (premier ? ' entree' : '') + '"><img src="' + IMG + p.image + '-640.jpg" alt="' + esc(p.alt) + '" width="104" height="104">' +
-          '<div><div class="ligne-haut"><div><p style="font-size:18px;font-weight:500">' + esc(p.nom) + '</p><p class="muted" style="font-size:14px">' + esc(f.nom) + ' · ' + fcfa(f.prix) + '</p></div><p class="prix" style="font-size:18px">' + fcfa(f.prix * x.qte) + '</p></div>' +
+        var p = parId[x.id], f = formatDe(x);
+        return '<li class="ligne' + (premier ? ' entree' : '') + '"><img src="' + esc(srcImg(p.image, true)) + '" alt="' + esc(p.alt) + '" width="104" height="104">' +
+          '<div><div class="ligne-haut"><div><p style="font-size:18px;font-weight:500">' + esc(p.nom) + '</p><p class="muted" style="font-size:14px">' + esc(f.nom) + ' · ' + fcfa(f.prix) + (f.disponible === false ? ' · <strong style="color:#f2b8a0">épuisé</strong>' : '') + '</p></div><p class="prix" style="font-size:18px">' + fcfa(f.prix * x.qte) + '</p></div>' +
           '<div class="ligne-bas"><div class="qte" role="group" aria-label="Quantité de ' + esc(p.nom) + '"><button type="button" data-l="' + k + '" data-d="-1" aria-label="Retirer un">−</button><output>' + x.qte + '</output><button type="button" data-l="' + k + '" data-d="1" aria-label="Ajouter un">+</button></div>' +
           '<button class="retirer" type="button" data-retirer="' + k + '">Retirer</button></div></div></li>';
       }).join('');
-      var sous = l.reduce(function (a, x) { var p = parId[x.id]; return a + (p.formats[x.fmt] || p.formats[0]).prix * x.qte; }, 0);
+      var sous = l.reduce(function (a, x) { return a + formatDe(x).prix * x.qte; }, 0);
       premier = false;
+      sousTotal = sous;
       $('[data-sous-total]').textContent = fcfa(sous);
-      $('[data-total]').textContent = fcfa(sous);
+      totaux();
       $$('[data-l]', liste).forEach(function (b) {
         b.addEventListener('click', function () {
-          var l2 = lire(), it = l2[+b.dataset.l];
-          it.qte = Math.max(1, Math.min(20, it.qte + (+b.dataset.d))); ecrire(l2); rendre();
+          var l2 = lire().filter(function (x) { return formatDe(x); }), it = l2[+b.dataset.l];
+          it.qte = Math.max(1, Math.min(20, it.qte + (+b.dataset.d))); ecrire(l2); rendre(); if (promo) appliquerPromo();
         });
       });
       $$('[data-retirer]', liste).forEach(function (b) {
-        b.addEventListener('click', function () { var l2 = lire(); l2.splice(+b.dataset.retirer, 1); ecrire(l2); rendre(); });
+        b.addEventListener('click', function () { var l2 = lire().filter(function (x) { return formatDe(x); }); l2.splice(+b.dataset.retirer, 1); ecrire(l2); rendre(); if (promo) appliquerPromo(); });
       });
       return sous;
     }
-    var sous = rendre();
+    rendre();
+    selZone.addEventListener('change', totaux);
+    function appliquerPromo() {
+      var code = form.code.value.trim(), msg = $('[data-promo-msg]');
+      if (!code) { promo = null; msg.textContent = ''; totaux(); return Promise.resolve(); }
+      msg.textContent = 'Vérification…';
+      return rpc('verifier_code_promo', { p_code: code, p_sous_total: sousTotal }).then(function (r) {
+        if (r && r.valide) { promo = r; msg.textContent = '✓ ' + r.message + ' : − ' + fcfa(r.remise); }
+        else { promo = null; msg.textContent = (r && r.message) || 'Code non valable.'; }
+        totaux();
+      }).catch(function () { promo = null; msg.textContent = 'Impossible de vérifier le code pour le moment.'; totaux(); });
+    }
+    $('[data-promo-appliquer]').addEventListener('click', appliquerPromo);
+    form.code.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); appliquerPromo(); } });
 
     // livraison / retrait
     function majMode() {
       var mode = (form.querySelector('input[name="mode"]:checked') || {}).value;
       $('[data-adresse]').hidden = mode !== 'livraison';
-      $('[data-mode-label]').textContent = mode === 'livraison' ? 'Livraison' : 'Retrait';
-      $('[data-mode-prix]').textContent = mode === 'livraison' ? 'Selon le quartier' : 'Offert';
+      blocZones.hidden = !(enLigne && ZONES.length && mode === 'livraison');
+      totaux();
     }
     $$('input[name="mode"]', form).forEach(function (r) { r.addEventListener('change', majMode); });
     majMode();
@@ -351,26 +454,52 @@
       var manque = [];
       if (!nom) manque.push('votre nom');
       if (!/^[+\d][\d\s]{7,}$/.test(tel)) manque.push('un numéro de téléphone valide');
+      if (mode === 'livraison' && enLigne && ZONES.length && !zoneChoisie()) manque.push('votre zone de livraison');
       if (mode === 'livraison' && !adr) manque.push('votre quartier et adresse');
       if (!pay) manque.push('un moyen de paiement');
       if (manque.length) { err.textContent = 'Merci d’indiquer ' + manque.join(', ') + '.'; err.hidden = false; err.focus(); return; }
       err.hidden = true;
-      var l = lire();
-      var total = l.reduce(function (a, x) { var p = parId[x.id]; return a + (p.formats[x.fmt] || p.formats[0]).prix * x.qte; }, 0);
-      var lignes = l.map(function (x) { var p = parId[x.id], f = p.formats[x.fmt] || p.formats[0]; return '• ' + x.qte + ' × ' + p.nom + ' (' + f.nom + ') — ' + fcfa(f.prix * x.qte); });
-      var msg = ['Bonjour Seduccess, je souhaite passer commande :', ''].concat(lignes).concat([
-        '', 'Total articles : ' + fcfa(total),
-        'Réception : ' + (mode === 'livraison' ? 'Livraison — ' + adr : 'Retrait à la Cité Alioune Sow, Golf Cambérène'),
-        'Paiement : ' + pay,
-        'Nom : ' + nom, 'Téléphone : ' + tel, '', 'Merci !'
-      ]).join('\n');
-      var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
-      window.open(url, '_blank', 'noopener');
-      var secours = $('[data-wa-secours]'); if (secours) secours.href = url;
-      ecrire([]);
-      zone.hidden = true;
-      var m = $('[data-merci]'); m.hidden = false; m.querySelector('h2').focus();
-      window.scrollTo({ top: 0, behavior: reduit ? 'auto' : 'smooth' });
+      var l = lire().filter(function (x) { return formatDe(x); });
+      var z = zoneChoisie();
+      var lignes = l.map(function (x) { var p = parId[x.id], f = formatDe(x); return '• ' + x.qte + ' × ' + p.nom + ' (' + f.nom + ') — ' + fcfa(f.prix * x.qte); });
+      var btn = form.querySelector('[type=submit]');
+
+      function terminer(r) {
+        var total = l.reduce(function (a, x) { return a + formatDe(x).prix * x.qte; }, 0);
+        var lignesMsg = r ? [
+          '', 'Sous-total : ' + fcfa(r.sous_total),
+          r.remise ? 'Remise (' + (promo ? promo.code : 'code promo') + ') : − ' + fcfa(r.remise) : null,
+          mode === 'livraison' ? 'Livraison (' + (r.zone || '') + ') : ' + fcfa(r.frais) : null,
+          'Total à payer : ' + fcfa(r.total)
+        ] : ['', 'Total articles : ' + fcfa(total)];
+        var msg = [r ? 'Bonjour Seduccess, voici ma commande n° ' + r.numero + ' :' : 'Bonjour Seduccess, je souhaite passer commande :', ''].concat(lignes).concat(lignesMsg).concat([
+          'Réception : ' + (mode === 'livraison' ? 'Livraison — ' + (z ? z.nom + ', ' : '') + adr : 'Retrait à la Cité Alioune Sow, Golf Cambérène'),
+          'Paiement : ' + pay,
+          'Nom : ' + nom, 'Téléphone : ' + tel, '', 'Merci !'
+        ]).filter(function (x) { return x !== null; }).join('\n');
+        var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank', 'noopener');
+        var secours = $('[data-wa-secours]'); if (secours) secours.href = url;
+        var num = $('[data-merci-num]'); if (num) { num.hidden = !r; if (r) num.textContent = 'Commande n° ' + r.numero + ' · ' + fcfa(r.total); }
+        ecrire([]);
+        zone.hidden = true;
+        var m = $('[data-merci]'); m.hidden = false; m.querySelector('h2').focus();
+        window.scrollTo({ top: 0, behavior: reduit ? 'auto' : 'smooth' });
+      }
+
+      var avecIds = l.every(function (x) { return formatDe(x).id; });
+      if (!(enLigne && avecIds)) return terminer(null);
+      btn.disabled = true; var txt = btn.innerHTML; btn.textContent = 'Enregistrement…';
+      rpc('passer_commande', { p: {
+        nom: nom, tel: tel, adresse: adr, mode: mode, zone_id: z ? z.id : null, paiement: pay,
+        code_promo: promo ? promo.code : null,
+        lignes: l.map(function (x) { return { format_id: formatDe(x).id, quantite: x.qte }; })
+      } }).then(function (r) { terminer(r); })
+        .catch(function (e2) {
+          if (e2.metier) { err.textContent = e2.message; err.hidden = false; err.focus(); }
+          else terminer(null);   // réseau indisponible : la commande part quand même sur WhatsApp
+        })
+        .then(function () { btn.disabled = false; btn.innerHTML = txt; });
     });
   }
 
@@ -388,7 +517,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    menu(); heros(); grilles(); fiche(); panier(); cercle();
+    menu(); cercle();
+    Promise.race([chargerCatalogue(), delai(3500)]).then(function () {
+      rendu = true;
+      heros(); grilles(); fiche(); panier();
+      observer(document); verifier(); majBadge(false);
+    });
     var nav = $('.nav');
     function bord() { if (nav) nav.classList.toggle('defile', window.scrollY > 8); }
     window.addEventListener('scroll', bord, { passive: true }); bord();

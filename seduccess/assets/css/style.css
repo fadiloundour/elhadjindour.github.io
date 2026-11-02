@@ -413,3 +413,13 @@ legend { padding: 0; margin-bottom: 14px; font-size: 20px; font-weight: 400; }
 
 /* colonne qui reste visible pendant la frise : seulement quand il y a deux colonnes */
 @media (min-width: 720px) { .colle { position: sticky; top: 120px; } }
+
+/* ---------- backend : prix barrés, épuisé, zones, code promo ---------- */
+.barre-prix { text-decoration: line-through; color: var(--texte-faible); font-weight: 300; margin-right: 4px; font-size: .85em; }
+.epuise { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--trait); color: var(--texte-faible); font-size: 14px; }
+.format[disabled] { opacity: .45; cursor: not-allowed; }
+.btn-or[disabled] { background: rgba(243, 235, 221, .14); color: var(--texte-faible); }
+.champ select { min-height: 52px; padding: 12px 18px; border-radius: 16px; border: 1px solid rgba(243, 235, 221, .24); background: var(--nuit-2); font-size: 16px; color: var(--sable); }
+.promo-l { display: flex; gap: 8px; }
+.promo-l input { flex: 1; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid rgba(243, 235, 221, .24); background: rgba(243, 235, 221, .05); font-size: 16px; text-transform: uppercase; }
+.promo-l input:focus { border-color: var(--miel); }
