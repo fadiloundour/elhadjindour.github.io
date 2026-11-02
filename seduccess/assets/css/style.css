@@ -410,3 +410,6 @@ legend { padding: 0; margin-bottom: 14px; font-size: 20px; font-weight: 400; }
 @media (min-width: 720px) {
   .bandeau { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
+
+/* colonne qui reste visible pendant la frise : seulement quand il y a deux colonnes */
+@media (min-width: 720px) { .colle { position: sticky; top: 120px; } }

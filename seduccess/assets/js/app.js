@@ -392,6 +392,14 @@
     var nav = $('.nav');
     function bord() { if (nav) nav.classList.toggle('defile', window.scrollY > 8); }
     window.addEventListener('scroll', bord, { passive: true }); bord();
+    // le bouton WhatsApp s'efface pendant la lecture (défilement vers le bas) et revient en remontant
+    var wa = $('.wa-flottant'), dernierY = window.scrollY;
+    if (wa) window.addEventListener('scroll', function () {
+      var y = window.scrollY, d = y - dernierY;
+      if (Math.abs(d) < 8) return;
+      if (!$('#toast.on')) wa.classList.toggle('cache', d > 0 && y > 200);
+      dernierY = y;
+    }, { passive: true });
     setTimeout(verifier, 300);
     observer(document);
     majBadge(false);
