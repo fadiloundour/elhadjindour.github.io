@@ -15,11 +15,11 @@
 <link rel="icon" type="image/svg+xml" href="assets/img/symbole.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;800&display=swap">
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="assets/js/app.js" defer></script>
+<link rel="preload" href="assets/fonts/montserrat-200.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/montserrat-400.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css?v=2">
+<script>document.documentElement.classList.add('js')</script>
+<script src="assets/js/app.js?v=2" defer></script>
 </head>
 <body>
 <a class="sr-only" href="#contenu">Aller au contenu</a>
@@ -37,10 +37,11 @@
       </button>
     </div>
   </nav>
-  <div class="menu-mobile" id="menu-mobile">
-    <a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="maison.html">La Maison</a><a href="maison.html#savoir-faire">Savoir-faire</a><a href="panier.html">Panier</a>
-  </div>
 </header>
+<nav class="menu-mobile" id="menu-mobile" aria-label="Menu">
+  <a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="maison.html">La Maison</a><a href="maison.html#savoir-faire">Savoir-faire</a><a href="panier.html">Panier</a>
+  <a class="menu-wa" href="https://wa.me/221772701516" target="_blank" rel="noopener">WhatsApp · +221 77 270 15 16</a>
+</nav>
 <main id="contenu">
 
 <section class="hero">
@@ -55,7 +56,7 @@
       </div>
     </div>
     <div class="rise d2">
-      <div class="stage" data-stage><img src="assets/img/produit-thiouraye.jpg" alt="Pot de thiouraye au gowé Seduccess et son écrin" data-nom="Thiouraye au gowé" data-fmt="Pot · 500 g · 22 000 FCFA" class="on" fetchpriority="high" width="1200" height="1200"><img src="assets/img/produit-huile.jpg" alt="Flacon d’huile parfumée Seduccess 100 ml et son écrin" data-nom="Huile parfumée" data-fmt="Flacon · 100 ml · 12 500 FCFA" loading="lazy" width="1200" height="1200"><img src="assets/img/produit-parfum.jpg" alt="Parfum d’intérieur Seduccess 250 ml et son écrin" data-nom="Parfum d’intérieur" data-fmt="250 ml / 500 ml · dès 6 500 FCFA" loading="lazy" width="1200" height="1200"><img src="assets/img/produit-recharge.jpg" alt="Sachet recharge Seduccess gowé thiouraye 1 kg" data-nom="Recharge gowé · thiouraye" data-fmt="Sachet · 1 kg · 35 000 FCFA" loading="lazy" width="1200" height="1200"></div>
+      <div class="stage" data-stage><picture><source type="image/webp" srcset="assets/img/produit-thiouraye-640.webp 640w, assets/img/produit-thiouraye.webp 1200w" sizes="(max-width: 719px) 100vw, 600px"><img src="assets/img/produit-thiouraye-640.jpg" srcset="assets/img/produit-thiouraye-640.jpg 640w, assets/img/produit-thiouraye.jpg 1200w" sizes="(max-width: 719px) 100vw, 600px" alt="Pot de thiouraye au gowé Seduccess et son écrin" data-nom="Thiouraye au gowé" data-fmt="Pot · 500 g · 22 000 FCFA" class="on" fetchpriority="high" width="1200" height="1200"></picture><picture><source type="image/webp" srcset="assets/img/produit-huile-640.webp 640w, assets/img/produit-huile.webp 1200w" sizes="(max-width: 719px) 100vw, 600px"><img src="assets/img/produit-huile-640.jpg" srcset="assets/img/produit-huile-640.jpg 640w, assets/img/produit-huile.jpg 1200w" sizes="(max-width: 719px) 100vw, 600px" alt="Flacon d’huile parfumée Seduccess 100 ml et son écrin" data-nom="Huile parfumée" data-fmt="Flacon · 100 ml · 12 500 FCFA" loading="lazy" width="1200" height="1200"></picture><picture><source type="image/webp" srcset="assets/img/produit-parfum-640.webp 640w, assets/img/produit-parfum.webp 1200w" sizes="(max-width: 719px) 100vw, 600px"><img src="assets/img/produit-parfum-640.jpg" srcset="assets/img/produit-parfum-640.jpg 640w, assets/img/produit-parfum.jpg 1200w" sizes="(max-width: 719px) 100vw, 600px" alt="Parfum d’intérieur Seduccess 250 ml et son écrin" data-nom="Parfum d’intérieur" data-fmt="250 ml / 500 ml · dès 6 500 FCFA" loading="lazy" width="1200" height="1200"></picture><picture><source type="image/webp" srcset="assets/img/produit-recharge-640.webp 640w, assets/img/produit-recharge.webp 1200w" sizes="(max-width: 719px) 100vw, 600px"><img src="assets/img/produit-recharge-640.jpg" srcset="assets/img/produit-recharge-640.jpg 640w, assets/img/produit-recharge.jpg 1200w" sizes="(max-width: 719px) 100vw, 600px" alt="Sachet recharge Seduccess gowé thiouraye 1 kg" data-nom="Recharge gowé · thiouraye" data-fmt="Sachet · 1 kg · 35 000 FCFA" loading="lazy" width="1200" height="1200"></picture></div>
       <div class="stage-bar">
         <div aria-live="polite"><p style="margin:0;font-size:18px;font-weight:500" data-stage-nom>Thiouraye au gowé</p><p class="muted" style="margin:0;font-size:14px" data-stage-fmt>Pot · 500 g · 22 000 FCFA</p></div>
         <div class="stage-dots" role="group" aria-label="Choisir un produit"><button class="dot" type="button" aria-pressed="true" aria-label="Afficher : Thiouraye au gowé"><span></span></button><button class="dot" type="button" aria-pressed="false" aria-label="Afficher : Huile parfumée"><span></span></button><button class="dot" type="button" aria-pressed="false" aria-label="Afficher : Parfum d’intérieur"><span></span></button><button class="dot" type="button" aria-pressed="false" aria-label="Afficher : Recharge gowé · thiouraye"><span></span></button></div>
@@ -80,7 +81,7 @@
       <p class="eyebrow" style="margin:0">La fondatrice</p>
       <h2 class="h2">Ndeye Sadio<br>Ndour</h2>
       <p style="margin:0;font-size:20px;line-height:1.6;max-width:30em">Une dame de fer. Coiffeuse diplômée, commerçante à Yoff Diamalaye, créatrice de mode à Mermoz, fondatrice de Nourou Taha Events : elle réunit aujourd’hui tout ce savoir-faire dans Seduccess.</p>
-      <a href="maison.html" style="color:var(--resine);font-weight:500">Découvrir son parcours ›</a>
+      <a class="lien" href="maison.html" style="color:var(--resine);align-self:flex-start">Découvrir son parcours ›</a>
     </div>
   </div>
 </section>

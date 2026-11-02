@@ -15,11 +15,11 @@
 <link rel="icon" type="image/svg+xml" href="assets/img/symbole.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;800&display=swap">
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="assets/js/app.js" defer></script>
+<link rel="preload" href="assets/fonts/montserrat-200.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/montserrat-400.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css?v=2">
+<script>document.documentElement.classList.add('js')</script>
+<script src="assets/js/app.js?v=2" defer></script>
 </head>
 <body>
 <a class="sr-only" href="#contenu">Aller au contenu</a>
@@ -37,10 +37,11 @@
       </button>
     </div>
   </nav>
-  <div class="menu-mobile" id="menu-mobile">
-    <a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="maison.html">La Maison</a><a href="maison.html#savoir-faire">Savoir-faire</a><a href="panier.html">Panier</a>
-  </div>
 </header>
+<nav class="menu-mobile" id="menu-mobile" aria-label="Menu">
+  <a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="maison.html">La Maison</a><a href="maison.html#savoir-faire">Savoir-faire</a><a href="panier.html">Panier</a>
+  <a class="menu-wa" href="https://wa.me/221772701516" target="_blank" rel="noopener">WhatsApp · +221 77 270 15 16</a>
+</nav>
 <main id="contenu">
 
 <section class="hero">
