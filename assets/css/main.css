@@ -893,3 +893,42 @@ html.has-intro:not(.has-pointer) .hero__visual{animation:heroPop .9s var(--ease-
 .cv-menu__list small{font-size:.78rem;opacity:.7}
 @keyframes cvIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 @media (max-width:1023px){.header-cta .cv-menu{display:none}}
+
+/* ===== Logo « en. » animé ===== */
+.nl{display:block;height:auto;overflow:visible}
+.nl .nl-e,.nl .nl-n{fill:var(--petrol)}
+.nl .nl-d,.nl .nl-k{fill:var(--accent)}
+.nl .nl-l{stroke:var(--accent);fill:none;stroke-dasharray:1;stroke-dashoffset:0}
+.nl .nl-e,.nl .nl-n,.nl .nl-d,.nl .nl-k{transform-box:fill-box;transform-origin:50% 50%}
+.nl .nl-h{transform-box:view-box}
+.brand .nl{width:52px;fill:none}
+.brand svg.nl{fill:none}
+/* entrée : e glisse, n monte, le point tombe, la poignée se dessine */
+.nl--head .nl-e,.nl--intro .nl-e{animation:nlE .6s cubic-bezier(.2,.8,.2,1) var(--nl-d,.25s) both}
+.nl--head .nl-n,.nl--intro .nl-n{animation:nlN .6s cubic-bezier(.2,.8,.2,1) calc(var(--nl-d,.25s) + .1s) both}
+.nl--head .nl-d,.nl--intro .nl-d{animation:nlD .55s cubic-bezier(.34,1.56,.64,1) calc(var(--nl-d,.25s) + .38s) both}
+.nl--head .nl-l,.nl--intro .nl-l{animation:nlL .45s cubic-bezier(.65,0,.35,1) calc(var(--nl-d,.25s) + .7s) both}
+.nl--head .nl-k,.nl--intro .nl-k{animation:nlD .45s cubic-bezier(.34,1.56,.64,1) calc(var(--nl-d,.25s) + 1.05s) both}
+@keyframes nlE{from{opacity:0;transform:translateX(-40%)}to{opacity:1;transform:none}}
+@keyframes nlN{from{opacity:0;transform:translateY(45%)}to{opacity:1;transform:none}}
+@keyframes nlD{0%{opacity:0;transform:scale(0)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}
+@keyframes nlL{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+html.has-intro .nl--head{--nl-d:1.95s}
+/* survol : on « tire » la poignée comme dans Illustrator */
+.nl .nl-h{transition:transform .55s cubic-bezier(.34,1.56,.64,1)}
+.brand:hover .nl-h,.brand:focus-visible .nl-h,.footer:hover .nl-h{transform:rotate(-24deg)}
+.brand:hover .nl-k{animation:none}
+/* volet d'intro : lettres blanches, point et poignée pétrole */
+.intro__box .nl{width:min(170px,30vw);animation:none;fill:none}
+.intro__box .nl .nl-e,.intro__box .nl .nl-n{fill:#fff}
+.intro__box .nl .nl-d,.intro__box .nl .nl-k{fill:var(--petrol)}
+.intro__box .nl .nl-l{stroke:var(--petrol)}
+.intro__box .nl{--nl-d:.15s}
+/* pied de page */
+.nl--foot{width:56px;flex:none}
+#contact .nl--foot .nl-e,#contact .nl--foot .nl-n{fill:#fff}
+@media (prefers-reduced-motion:reduce){.nl *{animation:none!important;transition:none!important}}
+.brand .nl{width:62px}
+.nl--head .nl-l,.nl--foot .nl-l{stroke-width:4.2px}
+.nl--head .nl-k,.nl--foot .nl-k{r:9px}
+.brand:hover .nl-h,.brand:focus-visible .nl-h,.footer:hover .nl-h{transform:rotate(-38deg)}
