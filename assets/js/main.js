@@ -236,7 +236,7 @@
     document.body.style.overflow = 'hidden';
   });
 
-  /* ---------- Vidéos SenFly ---------- */
+  /* ---------- Vidéos des études de cas (SenFly, Dajee-bi) ---------- */
   const videos = $$('video[data-autoplay]');
   const vIO = new IntersectionObserver(entries => {
     entries.forEach(en => {
@@ -315,8 +315,9 @@
     c.addEventListener('focus', on); c.addEventListener('blur', off);
   });
 
-  cards.forEach(c => c.dataset.project && c.addEventListener('click', () => {
+  $$('[data-project]').forEach(c => c.addEventListener('click', () => {
     const d = JSON.parse(c.dataset.project);
+    const start = Math.min(+(c.dataset.start || 0), d.gallery.length - 1);
     $('#lb-title').textContent = d.title;
     $('#lb-cat').textContent = d.label;
     $('#lb-desc').textContent = d.desc;
@@ -326,7 +327,7 @@
     lbGal.classList.toggle('tall', !!d.tall);
     lbGal.innerHTML = d.gallery.map((src, i) => (src && src.video)
       ? `<figure class="is-video"><video src="${src.video}" poster="${src.poster || ''}" controls playsinline preload="${i ? 'none' : 'metadata'}" aria-label="${d.title} — vidéo ${i + 1}"></video></figure>`
-      : `<figure><img src="${src}" alt="${d.title} — visuel ${i + 1}" ${i ? 'loading="lazy"' : ''}></figure>`).join('');
+      : `<figure><img src="${src}" alt="${d.title} — visuel ${i + 1}" ${i !== start ? 'loading="lazy"' : ''}></figure>`).join('');
     lbN = d.gallery.length;
     $('#lb-prev').hidden = $('#lb-next').hidden = lbN < 2;
     const link = $('#lb-link');
@@ -334,6 +335,7 @@
     lightbox.showModal();
     document.body.style.overflow = 'hidden';
     lbGal.scrollLeft = 0; lbUpdate();
+    if (start > 0) requestAnimationFrame(() => { lbGal.scrollLeft = start * lbGal.clientWidth; lbUpdate(); });
   }));
 
   /* ---------- Copier ---------- */

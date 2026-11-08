@@ -957,3 +957,103 @@ html.has-intro .nl--hero{--hd:2s}
 @media (max-width:1023px){.nl--hero{width:150px}}
 @media (prefers-reduced-motion:reduce){.nl--hero .nl-e path,.nl--hero .nl-n path{fill-opacity:1;stroke-opacity:0}}
 .nl--hero{margin:clamp(14px,2.4vh,24px) 0 clamp(14px,2.4vh,24px) 0}
+
+/* =========================================================
+   Dajee-bi — étude de cas aux couleurs de la marque
+   (Pétrole #0E434A · Lagune #1F6E75 · Sable #F6EFE5 · Brume #8FB8B5 · Encre #072C31 · Ocre #E3A23B)
+   ========================================================= */
+.case--dj{background:#072C31;--dj-ocre:#E3A23B;--dj-brume:#8FB8B5;--dj-sable:#F6EFE5}
+.case--dj::backdrop{background:rgba(7,44,49,.75)}
+.case--dj .case__bar{background:rgba(7,44,49,.9);border-bottom-color:rgba(143,184,181,.2)}
+.case--dj .case__back,.case--dj .case__close{border-color:rgba(143,184,181,.4)}
+.case--dj .case__back:hover{background:rgba(143,184,181,.12);border-color:var(--dj-brume)}
+.case--dj .case__close:hover{background:var(--dj-ocre);border-color:var(--dj-ocre);color:#072C31}
+.case--dj .case__tag{color:var(--dj-brume)}
+.dj{--paper:var(--dj-sable);--ink:#072C31;--ink-2:#0E434A;--ink-3:#0E434A;--text-2:#DCEAE6;--muted:#A9C9C5;--blue:var(--dj-sable);
+  --line:rgba(143,184,181,.2);--line-2:rgba(143,184,181,.35);--accent-strong:var(--dj-ocre);color:var(--dj-sable);color-scheme:dark;
+  border-bottom-color:rgba(143,184,181,.14)!important}
+.dj .h-l,.dj .h-m,.dj h2,.dj h3{color:var(--dj-sable)}
+.dj .eyebrow{color:var(--dj-ocre)}
+.dj .eyebrow::after{background:rgba(227,162,59,.4)}
+.dj .lead{color:#DCEAE6}
+.dj .muted{color:#A9C9C5}
+.dj .chip{border-color:rgba(143,184,181,.35);color:#DCEAE6}
+.dj .btn--solid{background:var(--dj-ocre);border-color:var(--dj-ocre);color:#072C31}
+.dj .btn--solid:hover{background:#f0b75a;border-color:#f0b75a}
+.dj .btn--ghost{color:var(--dj-sable);border-color:rgba(143,184,181,.45)}
+.dj .sf__meta dt{color:var(--dj-brume)}
+.case .dj-a{background:radial-gradient(120% 90% at 85% 0%,#1F6E75 0%,#0E434A 38%,#072C31 75%)}
+.dj__logo{width:clamp(170px,16vw,240px);height:auto;margin:0 0 22px -2%}
+.dj .phone{border-color:rgba(143,184,181,.35)}
+.dj .phone__ctrl button{background:rgba(7,44,49,.8);border-color:rgba(143,184,181,.45)}
+.dj .phone__ctrl svg{color:var(--dj-ocre)}
+.dj .phone__label{color:var(--dj-brume)}
+
+/* concept */
+.dj-b{background:#0E434A}
+.dj-concept{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,64px);align-items:center}
+.dj-shot{margin:0}
+.dj-shot button,.dj-page,.dj-mock,.dj-post{display:block;width:100%;cursor:zoom-in;text-align:left}
+.dj-shot img{width:100%;border-radius:var(--r-m);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.dj-shot figcaption,.dj-banner figcaption{margin-top:10px;font-size:.82rem;color:#A9C9C5}
+.dj-brand{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,4vw,64px);margin-top:clamp(36px,6vh,64px);padding-top:clamp(28px,4vh,40px);border-top:1px solid rgba(143,184,181,.2)}
+.dj-brand h3{font-size:1.25rem;font-weight:700;margin-bottom:8px}
+.dj-brand p{color:#DCEAE6;font-size:.95rem;max-width:52ch}
+.dj-brand p b{color:var(--dj-sable)}
+.dj-swatches{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:18px}
+.dj-swatches li{display:flex;flex-direction:column;gap:2px;font-size:.72rem;color:#A9C9C5;min-width:0}
+.dj-swatches i{display:block;aspect-ratio:1;border-radius:10px;background:var(--c);border:1px solid rgba(246,239,229,.18);margin-bottom:6px}
+.dj-swatches b{color:var(--dj-sable);font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dj-prop{display:flex;height:14px;border-radius:999px;overflow:hidden;margin-top:18px;border:1px solid rgba(246,239,229,.15)}
+.dj-prop-l{display:flex;margin-top:6px;font-size:.68rem;color:#A9C9C5;gap:4px}
+.dj-prop-l span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dj-role{margin-top:22px;border-top-color:rgba(143,184,181,.25)}
+.dj-role li{color:#DCEAE6}
+.dj-role b{color:var(--dj-sable)}
+
+/* charte : pages en défilement horizontal */
+.dj-c{background:#072C31}
+.dj-pages{display:flex;gap:clamp(14px,1.6vw,22px);overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 24px;margin-top:26px;scrollbar-width:thin;scrollbar-color:var(--dj-ocre) transparent}
+.dj-page{flex:none;scroll-snap-align:start;width:clamp(260px,30vw,460px)}
+.dj-page img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:12px;border:1px solid rgba(143,184,181,.2);transition:transform .5s var(--ease),box-shadow .5s}
+.dj-page:hover img,.dj-mock:hover img,.dj-post:hover img{transform:translateY(-4px);box-shadow:0 24px 50px -24px rgba(0,0,0,.7)}
+.dj-cap{display:block;margin-top:10px;font-size:.8rem;color:#A9C9C5}
+.dj-cap b{display:block;color:var(--dj-sable);font-size:.9rem;font-weight:600}
+
+/* supports : grille de mises en situation */
+.dj-d{background:#0E434A}
+.dj-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.4vw,20px);margin-top:28px}
+.dj-mock{border-radius:var(--r-m);overflow:hidden;background:#e9e5df;position:relative}
+.dj-mock.dj-big{grid-column:span 2;grid-row:span 2}
+.dj-mock img{width:100%;height:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .8s var(--ease)}
+.dj-mock.dj-big img{aspect-ratio:auto;height:100%}
+.dj-mock:hover img{transform:scale(1.04);box-shadow:none}
+.dj-mock .dj-cap{position:absolute;left:12px;bottom:12px;right:12px;margin:0;padding:10px 14px;border-radius:12px;background:rgba(7,44,49,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);width:max-content;max-width:calc(100% - 24px)}
+
+/* social */
+.dj-e{background:#072C31}
+.dj-posts{margin-top:26px;scrollbar-color:var(--dj-ocre) transparent}
+.case .dj-posts .dj-post{width:clamp(180px,15vw,240px)}
+.dj-post img{aspect-ratio:4/5;border-radius:14px;border:1px solid rgba(143,184,181,.22);background:#0E434A;transition:transform .5s var(--ease),box-shadow .5s}
+.dj-banner{margin:28px 0 0}
+.dj-banner img{width:100%;border-radius:var(--r-m)}
+.case--dj .case__end{background:#0E434A}
+
+/* carte Dajee-bi dans Réalisations */
+.card--dj .card__media::after{content:"Étude de cas";background:#0E434A;color:#F6EFE5}
+
+@media (max-width:1023px){
+  .dj-concept,.dj-brand{grid-template-columns:1fr}
+  .dj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dj-swatches{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .dj-grid{grid-template-columns:1fr}
+  .dj-mock.dj-big{grid-column:auto;grid-row:auto}
+  .dj-mock.dj-big img{aspect-ratio:4/3}
+  .dj-page{width:78vw}
+  .dj-prop-l{display:none}
+  .dj__logo{width:180px}
+}
+.dj .phone{background:#072C31;box-shadow:0 0 0 1px rgba(143,184,181,.4),0 40px 80px -30px rgba(0,0,0,.85)}
+.phone__ctrl button[hidden]{display:none}
