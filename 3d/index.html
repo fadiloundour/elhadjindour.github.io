@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elhadji Ndour — Portfolio 3D</title>
+<meta name="description" content="Le portfolio d’Elhadji Ndour en 3D : graphiste, motion designer, UX/UI et communication digitale à Paris.">
+<meta name="theme-color" content="#0f0e0d">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<div class="loader" id="loader"><div class="loader__in"><svg class="vlogo" viewBox="5.3 72.8 314.9 134.3" aria-hidden="true"><g class="nl-e"><path transform="translate(0 200) scale(0.22 -0.22)" d="M318 -12Q231 -12 167.0 26.5Q103 65 68.0 130.0Q33 195 33 274Q33 356 69.5 420.0Q106 484 168.0 521.0Q230 558 308 558Q373 558 423.0 537.5Q473 517 507.5 480.0Q542 443 560.0 394.5Q578 346 578 289Q578 273 576.5 257.5Q575 242 571 231H162V341H486L415 289Q425 332 414.0 365.5Q403 399 375.5 418.5Q348 438 308 438Q269 438 241.0 419.0Q213 400 199.0 363.0Q185 326 188 273Q184 227 199.0 192.0Q214 157 245.0 137.5Q276 118 320 118Q360 118 388.5 134.0Q417 150 433 178L553 121Q537 81 502.5 51.0Q468 21 421.0 4.5Q374 -12 318 -12Z"/></g><g class="nl-n"><path transform="translate(111.10 200) scale(0.22 -0.22)" d="M55 0V546H195V438L187 462Q206 511 248.5 534.5Q291 558 348 558Q410 558 456.5 532.0Q503 506 529.0 459.5Q555 413 555 351V0H405V319Q405 351 392.5 374.0Q380 397 357.5 410.0Q335 423 305 423Q276 423 253.0 410.0Q230 397 217.5 374.0Q205 351 205 319V0Z"/></g><g class="nl-h" style="transform-origin:256.3px 187.0px"><line class="nl-l" pathLength="1" x1="256.3" y1="187.0" x2="310.2" y2="135.3" stroke-width="2.4" stroke-linecap="round"/><circle class="nl-k" cx="310.2" cy="135.3" r="5.9"/></g><rect class="nl-d" x="243.3" y="174.0" width="26.0" height="26.0"/></svg><p><span id="pct">0</span>%</p></div></div>
+
+<header class="top">
+  <a class="brand" href="#" data-go="0" aria-label="Retour au début"><svg class="vlogo" viewBox="5.3 72.8 314.9 134.3" aria-hidden="true"><g class="nl-e"><path transform="translate(0 200) scale(0.22 -0.22)" d="M318 -12Q231 -12 167.0 26.5Q103 65 68.0 130.0Q33 195 33 274Q33 356 69.5 420.0Q106 484 168.0 521.0Q230 558 308 558Q373 558 423.0 537.5Q473 517 507.5 480.0Q542 443 560.0 394.5Q578 346 578 289Q578 273 576.5 257.5Q575 242 571 231H162V341H486L415 289Q425 332 414.0 365.5Q403 399 375.5 418.5Q348 438 308 438Q269 438 241.0 419.0Q213 400 199.0 363.0Q185 326 188 273Q184 227 199.0 192.0Q214 157 245.0 137.5Q276 118 320 118Q360 118 388.5 134.0Q417 150 433 178L553 121Q537 81 502.5 51.0Q468 21 421.0 4.5Q374 -12 318 -12Z"/></g><g class="nl-n"><path transform="translate(111.10 200) scale(0.22 -0.22)" d="M55 0V546H195V438L187 462Q206 511 248.5 534.5Q291 558 348 558Q410 558 456.5 532.0Q503 506 529.0 459.5Q555 413 555 351V0H405V319Q405 351 392.5 374.0Q380 397 357.5 410.0Q335 423 305 423Q276 423 253.0 410.0Q230 397 217.5 374.0Q205 351 205 319V0Z"/></g><g class="nl-h" style="transform-origin:256.3px 187.0px"><line class="nl-l" pathLength="1" x1="256.3" y1="187.0" x2="310.2" y2="135.3" stroke-width="2.4" stroke-linecap="round"/><circle class="nl-k" cx="310.2" cy="135.3" r="5.9"/></g><rect class="nl-d" x="243.3" y="174.0" width="26.0" height="26.0"/></svg><span>Elhadji Ndour</span></a>
+  <nav class="chap" aria-label="Chapitres">
+    <button data-go="c0"><b>01</b> Applications</button>
+    <button data-go="c1"><b>02</b> Identités</button>
+    <button data-go="c2"><b>03</b> Motion</button>
+    <button data-go="c3"><b>04</b> Communication</button>
+    <button data-go="1"><b>✉</b> Contact</button>
+  </nav>
+  <a class="classic" href="../">Version classique</a>
+</header>
+
+<!-- Calques de texte pilotés par le défilement -->
+<section class="ov ov--hero" data-ov="hero">
+  <p class="kick">Elhadji Ndour · Paris</p>
+  <h1>Port<span class="c">•</span><br>folio<span class="o">.</span></h1>
+  <p class="role">Graphiste &amp; motion designer<br>UX/UI · Communication digitale</p>
+</section>
+<div class="hint" data-ov="hint"><span class="mouse"><i></i></span>Faites défiler pour entrer dans l’atelier</div>
+
+<section class="ov ov--about" data-ov="about">
+  <p class="kick">Bonjour</p>
+  <h2>Je conçois, je dessine,<br>j’anime, je code.</h2>
+  <p>Graphisme et vidéo à Dakar, puis un master en stratégie digitale à Paris. Plus de quatre ans à créer des marques, des vidéos, des campagnes et des applications. Ce portfolio se visite comme un atelier&nbsp;: avancez, et cliquez sur un projet pour l’ouvrir.</p>
+  <ul class="nums"><li><b>4<i>+</i></b>ans d’expérience</li><li><b>26</b>projets dans l’atelier</li><li><b>3</b>apps conçues et codées</li></ul>
+</section>
+
+<div id="chapters"></div>
+
+<section class="ov ov--end" data-ov="end">
+  <p class="kick">Pour toute collaboration</p>
+  <h2>Travaillons<br>ensemble<span class="o">.</span></h2>
+  <div class="contact">
+    <a href="mailto:mamefadilou@gmail.com">mamefadilou@gmail.com</a>
+    <a href="tel:+33744872742">+33 7 44 87 27 42</a>
+  </div>
+  <div class="btns">
+    <a class="btn btn--o" href="../assets/docs/Book-Elhadji-Ndour.pdf" target="_blank" rel="noopener">Book portfolio (PDF)</a>
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download>CV Communication digitale</a>
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download>CV Graphiste &amp; motion</a>
+  </div>
+  <p class="links"><a href="https://www.linkedin.com/in/fadilou-mbacke-ndour/" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://www.behance.net/fadiloundour" target="_blank" rel="noopener">Behance</a> · <a href="../">Version classique du site</a></p>
+</section>
+
+<aside class="rail" aria-hidden="true"><span class="rail__fill" id="railFill"></span><span class="rail__a" id="railA"></span><span id="railTicks"></span></aside>
+<p class="count" aria-hidden="true"><span id="cnt">00</span> / 26</p>
+<div class="tip" id="tip"></div>
+
+<dialog class="panel" id="panel" aria-labelledby="pTitle">
+  <button class="panel__x" id="pClose" aria-label="Fermer">×</button>
+  <div class="panel__media" id="pMedia"></div>
+  <div class="panel__body">
+    <p class="kick" id="pLabel"></p>
+    <h3 id="pTitle"></h3>
+    <p id="pDesc"></p>
+    <p class="tags" id="pTags"></p>
+    <a class="btn btn--o" id="pLink" target="_blank" rel="noopener"></a>
+  </div>
+</dialog>
+
+<div class="nogl" id="nogl" hidden><p>Votre navigateur ne peut pas afficher la version 3D.</p><a class="btn btn--o" href="../">Voir le portfolio classique</a></div>
+
+<div id="scroller" aria-hidden="true"></div>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
