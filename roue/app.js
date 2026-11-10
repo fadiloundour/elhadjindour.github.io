@@ -6,6 +6,7 @@ import { PROJECTS, CHAPTERS } from '../3d/data.js';
 const $ = (s) => document.querySelector(s);
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouch = matchMedia('(hover: none), (pointer: coarse)').matches;
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const full = (u) => (u.startsWith('img/') ? '../3d/' + u : u);
 const small = (u) => '../3d/img/s/' + u.replace(/^(\.\.\/assets\/|img\/)/, '').replace(/\//g, '_').replace(/\.[a-z]+$/i, '.webp');
@@ -63,7 +64,15 @@ function layout() {
   $('#ring').style.width = $('#ring').style.height = G.rh * 2 + 'px';
   $('#hubBtn').style.top = Math.min(-G.rh * 0.6, H - 92 - G.cy) + 'px';   // toujours lisible, même sur écran bas
 }
-layout(); addEventListener('resize', layout);
+layout();
+// 3D (WebGL) quand l'appareil le permet ; sinon la roue en CSS prend le relais (ou avec ?css dans l'adresse)
+let GLR = null;
+if (!new URLSearchParams(location.search).has('css')) {
+  try { const m = await import('./gl.js'); GLR = await m.initGL({ canvas: $('#gl'), cards, G, wordEl: $('.word'), logoSvg: logoTpl, reduce, isTouch }); document.body.classList.add('gl'); }
+  catch (e) { console.warn('3D indisponible, version CSS', e); document.querySelectorAll('.word .l').forEach((l) => (l.style.visibility = '')); }
+}
+addEventListener('resize', () => { layout(); if (GLR) GLR.layout(); });
+const rectOf = (i) => (GLR ? GLR.rectOf(i) : cards[i].el.getBoundingClientRect());
 
 /* ---------------- entrées : glisser, molette, clavier ---------------- */
 const stage = $('#stage');
@@ -86,7 +95,7 @@ const endDrag = (e) => {
   if (!drag.on || e.pointerId !== drag.id) return; drag.on = false; stage.classList.remove('grabbing');
   wheel.querySelectorAll('.card').forEach((c) => (c.style.filter = ''));
   const was = drag.active; drag.active = false;
-  if (!was) { if (drag.card) tapCard(+drag.card.dataset.i); return; }
+  if (!was) { const i = GLR ? GLR.pick(e.clientX, e.clientY) : drag.card ? +drag.card.dataset.i : -1; if (i >= 0) tapCard(i); return; }
   const a = drag.hist[0], b = drag.hist[drag.hist.length - 1], dt = Math.max(16, b.t - a.t) / 1000;
   const v = (drag.axis === 'x' ? -(b.x - a.x) : b.y - a.y) / dt / G.arc;          // cartes par seconde
   let t = Math.round(spring.x + v * 0.25); t = clamp(t, Math.round(spring.x) - 4, Math.round(spring.x) + 4);
@@ -158,13 +167,13 @@ function fillSheet(i) {
 }
 function openCard(i) {
   const c = cards[i]; if (!c) return;
-  if (c.kind === 'end') return openDlg(contact, c.el);
+  if (c.kind === 'end') return openDlg(contact, { getBoundingClientRect: () => rectOf(i) });
   openSheet(i);
 }
 function openSheet(i, { push = true } = {}) {
   if (sheet.open || !openable(i)) return; go(i); fillSheet(i); sheet.showModal(); $('#pClose').focus({ preventScroll: true });
   if (push) { history.pushState({ sheet: 1 }, '', '#' + cards[i].slug); sheetPushed = true; } else setHash('#' + cards[i].slug);
-  const r = sheet.getBoundingClientRect(), b = cards[i].el.getBoundingClientRect();
+  const r = sheet.getBoundingClientRect(), b = rectOf(i);
   sheet.style.transformOrigin = `${b.left + b.width / 2 - r.left}px ${b.top + b.height / 2 - r.top}px`;   // la fiche naît de la carte
   if (!reduce) sheet.animate([{ opacity: 0, transform: 'scale(.5)', filter: 'blur(8px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' });
 }
@@ -277,7 +286,8 @@ function frame(now) {
   if (!drag.active) stepSpring(dt);
   const x = spring.x, v = spring.v;
   // cartes disposées sur l'arc : rotation autour du moyeu, puis légère profondeur pour la carte au sommet
-  for (let i = 0; i < N; i++) {
+  if (GLR) GLR.frame(dt, t, x, v, drag.active);
+  else for (let i = 0; i < N; i++) {
     const c = cards[i], d = i - x, ad = Math.abs(d), a = d * G.step;
     const vis = Math.abs(a) < 1.95 && ad < 9;
     if (!vis) { if (!c.el.hidden) c.el.hidden = true; continue; }
@@ -297,7 +307,7 @@ function frame(now) {
   if (!sheet.open && Math.abs(v) < 0.05 && Math.abs(x - spring.target) < 0.02 && moved) syncHash();
   css(ring, 'transform', `translate(-50%,-50%) rotate(${(-x * G.step * 0.55).toFixed(4)}rad)`);
   // le mot se retourne comme un ruban : une vague toutes les 7 s, et il s'incline avec la vitesse de la roue
-  if (!reduce) {
+  if (!reduce && !GLR) {
     const tc = (t + 6.2) % 7, lean = clamp(v * 7, -28, 28);
     letters.forEach((l, i) => { const k = ease(clamp((tc - i * 0.085) / 1.05)); css(l, 'transform', `rotateX(${(k * 360 + lean).toFixed(1)}deg)`); });
     css(band, 'transform', `translateX(calc(-30% + ${(-v * 5).toFixed(1)}px))`);
