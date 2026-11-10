@@ -10,6 +10,8 @@ const N = PROJECTS.length;
 const isTouch = matchMedia('(hover: none), (pointer: coarse)').matches;
 const isSmall = () => innerWidth < 860;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// mode léger pour téléphones et tablettes : textures réduites, pas d'anticrénelage matériel, pas de vidéo sur les cartes
+const LITE = isTouch || innerWidth < 860 || (navigator.hardwareConcurrency || 8) <= 4;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const damp = (c, t, l, dt) => c + (t - c) * (1 - Math.exp(-l * dt));
@@ -32,9 +34,9 @@ const rubber = (x) => { // élastique aux extrémités
 /* ---------------- WebGL ---------------- */
 const canvas = $('#gl'); canvas.setAttribute('role', 'img');
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !LITE, alpha: true, powerPreference: 'high-performance' }); }
 catch (e) { $('#nogl').hidden = false; $('#loader').classList.add('done'); throw e; }
-renderer.setPixelRatio(Math.min(devicePixelRatio, isSmall() ? 1.5 : 1.75));
+renderer.setPixelRatio(Math.min(devicePixelRatio, LITE ? 1.5 : 1.75));
 renderer.setSize(innerWidth, innerHeight, false);
 renderer.setClearColor(0x000000, 0);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -53,7 +55,7 @@ const clock = new THREE.Clock();
 const manager = new THREE.LoadingManager();
 manager.onProgress = (_, l, t) => { $('#pct').textContent = Math.round((l / t) * 100); };
 let ready = false, introT0 = 0;
-const finish = () => { if (ready) return; ready = true; $('#loader').classList.add('done'); introT0 = clock.elapsedTime; $('#hint').style.opacity = 1; };
+const finish = () => { if (ready) return; ready = true; $('#loader').classList.add('done'); introT0 = clock.elapsedTime; if (!moved) $('#hint').style.opacity = 1; };
 manager.onLoad = () => setTimeout(finish, 200);
 setTimeout(finish, 6000);
 const bmpOK = typeof createImageBitmap === 'function' && !/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -61,7 +63,7 @@ const bmpLoader = new THREE.ImageBitmapLoader(manager); bmpLoader.setOptions({ i
 const texLoader = new THREE.TextureLoader(manager);
 // image décodée hors du fil principal puis envoyée au GPU dès le chargement : aucune saccade quand la carte apparaît
 function loadTex(url, cb) {
-  const done = (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy()); renderer.initTexture(t); cb(t); };
+  const done = (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(LITE ? 2 : 8, renderer.capabilities.getMaxAnisotropy()); renderer.initTexture(t); cb(t); };
   if (bmpOK) bmpLoader.load(url, (bmp) => { const t = new THREE.Texture(bmp); t.flipY = false; t.needsUpdate = true; t.userData.w = bmp.width; t.userData.h = bmp.height; done(t); }, undefined, () => texLoader.load(url, (t) => { t.userData.w = t.image.width; t.userData.h = t.image.height; done(t); }));
   else texLoader.load(url, (t) => { t.userData.w = t.image.width; t.userData.h = t.image.height; done(t); });
 }
@@ -76,7 +78,7 @@ function buildLogo(svgText) {
   const parts = {};
   new SVGLoader().parse(svgText).paths.forEach((p) => {
     const id = p.userData.node.id;
-    const geo = new THREE.ExtrudeGeometry(SVGLoader.createShapes(p), { depth: DEPTH, bevelEnabled: true, bevelThickness: 3, bevelSize: 1.4, bevelSegments: 4, curveSegments: 14 });
+    const geo = new THREE.ExtrudeGeometry(SVGLoader.createShapes(p), { depth: DEPTH, bevelEnabled: true, bevelThickness: 3, bevelSize: 1.4, bevelSegments: LITE ? 2 : 4, curveSegments: LITE ? 8 : 14 });
     geo.computeBoundingBox(); const c = new THREE.Vector3(); geo.boundingBox.getCenter(c); geo.translate(-c.x, -c.y, -c.z);
     const g = new THREE.Group(); g.position.copy(c); g.add(new THREE.Mesh(geo, id === 'd' ? orange : cream)); inner.add(g);
     parts[id] = g; g.userData.home = c.clone();
@@ -114,6 +116,7 @@ fetch('logo3d.svg').then((r) => r.text()).then((t) => { logo = buildLogo(t); log
 const GAP = isSmall() ? 3.0 : 3.3, CH_EXTRA = 1.8, Z0 = -5;
 const D = isSmall() ? 4.5 : 4.4;              // distance caméra → carte au repos
 const items = []; let z = Z0;
+const cardUrl = (u) => (LITE ? 'img/s/' + u.replace(/^(\.\.\/assets\/|img\/)/, '').replace(/\//g, '_').replace(/\.[a-z]+$/i, '.webp') : u);
 const roundedRect = (w, h, r) => { const s = new THREE.Shape(); const x = -w / 2, y = -h / 2;
   s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
   s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s; };
@@ -138,19 +141,28 @@ PROJECTS.forEach((p, i) => {
     mesh.geometry.dispose(); mesh.geometry = g; shadow.scale.set(w, h, 1); anchor.position.set(-w / 2 - 0.14, -h / 2 - 0.12, 0.02);
   };
   setSize(4 / 3);
-  if (p.video) {
+  if (p.video && !LITE) {
     const v = document.createElement('video'); Object.assign(v, { src: p.video, muted: true, loop: true, playsInline: true, preload: 'metadata' });
     v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
     const vt = new THREE.VideoTexture(v); vt.colorSpace = THREE.SRGBColorSpace; it.video = v; it.vtex = vt;
     v.addEventListener('loadedmetadata', () => setSize(v.videoWidth / v.videoHeight));
   }
-  loadTex(p.img, (t) => {
+  it.load = (next) => loadTex(cardUrl(p.img), (t) => {
     if (!mat.map) { mat.map = t; mat.color.set(0x1e1c1a); mat.needsUpdate = true; it.fadeIn = 0; }
-    if (!p.video) setSize(t.userData.w / t.userData.h);
+    if (!it.video) setSize(t.userData.w / t.userData.h);
+    next();
   });
   items.push(it); z -= GAP;
 });
 const Z_END = items[N - 1].z - 5;
+// chargement progressif : toujours la carte non chargée la plus proche, deux à la fois, jamais toutes d'un coup
+function pump() {
+  let best = null, bd = 1e9;
+  for (const it of items) if (!it.loading) { const d = Math.abs(it.i - Math.max(0, spring.target)); if (d < bd) { bd = d; best = it; } }
+  if (!best) return; best.loading = true;
+  best.load(() => setTimeout(pump, LITE ? 60 : 16));
+}
+pump(); pump();
 function place() {
   if (logo) { if (isSmall()) logo.position.set(0, 1.75, 0); else logo.position.set(1.75, 0.1, 0); }
   if (logoEnd) { logoEnd.position.set(0, isSmall() ? 1.9 : 1.55, Z_END - 5); logoEnd.scale.setScalar(isSmall() ? 0.42 : 0.58); }
@@ -322,11 +334,12 @@ const par = { x: 0, y: 0 }; let lastIdx = -1;
 const bg = $('#bg'), bgTint = $('#bgTint'), railFill = $('#railFill'), railA = $('#railA');
 const css = (el, k, v) => { const c = el.__c || (el.__c = {}); if (c[k] !== v) { c[k] = v; el.style[k] = v; } };
 function ov(el, o, base) { const r = Math.round(o * 1000) / 1000; css(el, 'opacity', String(r)); css(el, 'transform', `${base} translateY(${((1 - r) * 16).toFixed(1)}px)`); css(el, 'pointerEvents', r > 0.6 ? 'auto' : 'none'); }
-const MAX_DPR = Math.min(devicePixelRatio, isSmall() ? 1.5 : 1.75); let dpr = MAX_DPR, ftAvg = 1 / 60, ftN = 0;
+const MAX_DPR = Math.min(devicePixelRatio, LITE ? 1.5 : 1.75); let dpr = MAX_DPR, ftAvg = 1 / 60, ftN = 0, good = 0;
 function adapt(dt) { // garde 60 i/s : baisse la résolution si l'appareil peine, la remonte s'il est à l'aise
   ftAvg = ftAvg * 0.95 + dt * 0.05; if (++ftN < 90) return; ftN = 0;
-  if (ftAvg > 1 / 45 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); }
-  else if (ftAvg < 1 / 58 && dpr < MAX_DPR) { dpr = Math.min(MAX_DPR, dpr + 0.25); renderer.setPixelRatio(dpr); }
+  // on baisse vite, on remonte lentement (jamais sur mobile) : pas de va-et-vient qui ferait saccader
+  if (ftAvg > 1 / 48 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); good = 0; }
+  else if (!LITE && ftAvg < 1 / 58 && dpr < MAX_DPR && ++good >= 4) { dpr = Math.min(MAX_DPR, dpr + 0.25); renderer.setPixelRatio(dpr); good = 0; }
 }
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime; adapt(dt);
@@ -348,9 +361,11 @@ function frame() {
   // cartes
   const hov = !isTouch && !drag.active && !sheet.open && mouse.in ? pick((mouse.x + 1) / 2 * innerWidth, (1 - mouse.y) / 2 * innerHeight) : null;
   css(canvas, 'cursor', drag.active ? '' : hov ? 'pointer' : '');
+  const heroHide = isSmall() && p < -1.2;
   items.forEach((it) => {
     const d = it.i - p, ad = Math.abs(d);
-    const o = d < 0 ? clamp(1 + (d + 0.3) / 0.45) : 1 - smooth(5, 7.5, d);   // la carte dépassée s'efface avant de traverser la caméra
+    let o = d < 0 ? clamp(1 + (d + 0.3) / 0.45) : 1 - smooth(5, 7.5, d);   // la carte dépassée s'efface avant de traverser la caméra
+    if (heroHide) o *= smooth(-1.75, -1.25, p);                       // sur téléphone, l'accueil reste dégagé derrière le titre
     it.mat.opacity = o; it.shadowMat.opacity = 0.45 * o; it.group.visible = o > 0.01;
     it.hover = damp(it.hover, it === hov ? 1 : 0, 10, dt);
     it.pressS = damp(it.pressS || 0, it.press, 18, dt);
@@ -377,7 +392,7 @@ function frame() {
   const ab = segBtns[ch]; if (ab && seg.offsetParent) { pillS.x = damp(pillS.x, ab.offsetLeft, 12, dt); pillS.w = damp(pillS.w, ab.offsetWidth, 12, dt); css(pill, 'transform', `translateX(${pillS.x.toFixed(1)}px)`); css(pill, 'width', `${pillS.w.toFixed(1)}px`); css(pill, 'opacity', '1'); } else css(pill, 'opacity', '0');
   tintT.set(ch >= 0 && ch < 4 ? TINTS[ch] : '#14516a'); tint.lerp(tintT, 1 - Math.exp(-2 * dt)); css(bgTint, 'background', `#${tint.getHexString()}`);
   const fr = (p - P_MIN) / (P_MAX - P_MIN); css(railFill, 'height', `${(fr * 100).toFixed(2)}%`); css(railA, 'top', `${(fr * 100).toFixed(2)}%`);
-  css(bg, 'transform', `translate3d(${(-par.x * 12).toFixed(1)}px,${(par.y * 8 - fr * 30).toFixed(1)}px,0)`);
+  if (!LITE) css(bg, 'transform', `translate3d(${(-par.x * 12).toFixed(1)}px,${(par.y * 8 - fr * 30).toFixed(1)}px,0)`);
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(frame);

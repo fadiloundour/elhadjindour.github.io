@@ -229,3 +229,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 @media (max-width:860px){.case li{grid-template-columns:1fr;gap:4px}}
 .sheet[open]{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
 @media (max-width:860px){.sheet[open]{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== v7 : téléphones et tablettes — on retire les effets coûteux pour le GPU ===== */
+@media (hover:none),(pointer:coarse),(max-width:860px){
+  #bgTint{mix-blend-mode:normal;opacity:.16}
+  .bg img{will-change:auto;opacity:.18}
+  .bar,.seg,.glass-btn,.btn{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .bar{background:rgba(20,18,17,.94)}
+  .seg,.glass-btn,.btn{background:rgba(24,22,20,.88)}
+  .glass-btn--o,.btn--o{background:var(--orange)}
+  .sheet::backdrop,.pop::backdrop,.gridv::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(6,6,6,.78)}
+  .ov{will-change:auto}
+  #gl{will-change:auto}
+}
+
+.glass-btn,.seg button{white-space:nowrap}
+@media (max-width:1320px){.top__classic,.brand span{display:none}}
+@media (max-width:1060px){.icon-btn span{display:none}.icon-btn{width:44px;justify-content:center;padding:0}}
