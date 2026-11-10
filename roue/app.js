@@ -72,7 +72,7 @@ stage.addEventListener('pointerdown', (e) => {
   if (e.button !== 0 || e.target.closest('.hub__btn')) return;
   Object.assign(drag, { on: true, active: false, id: e.pointerId, x0: e.clientX, y0: e.clientY, p0: spring.x, axis: null, hist: [{ x: e.clientX, y: e.clientY, t: performance.now() }] });
   stage.setPointerCapture(e.pointerId);
-  const c = e.target.closest('.card'); if (c) c.style.filter = 'brightness(.96)';   // retour dès l'appui
+  const c = e.target.closest('.card'); drag.card = c; if (c) c.style.filter = 'brightness(.96)';   // retour dès l'appui (on retient la carte : avec la capture du pointeur, le relâché vise la scène)
 });
 stage.addEventListener('pointermove', (e) => {
   if (!drag.on || e.pointerId !== drag.id) return;
@@ -86,14 +86,18 @@ const endDrag = (e) => {
   if (!drag.on || e.pointerId !== drag.id) return; drag.on = false; stage.classList.remove('grabbing');
   wheel.querySelectorAll('.card').forEach((c) => (c.style.filter = ''));
   const was = drag.active; drag.active = false;
-  if (!was) { const c = e.target.closest('.card'); if (c) tapCard(+c.dataset.i); return; }
+  if (!was) { if (drag.card) tapCard(+drag.card.dataset.i); return; }
   const a = drag.hist[0], b = drag.hist[drag.hist.length - 1], dt = Math.max(16, b.t - a.t) / 1000;
   const v = (drag.axis === 'x' ? -(b.x - a.x) : b.y - a.y) / dt / G.arc;          // cartes par seconde
   let t = Math.round(spring.x + v * 0.25); t = clamp(t, Math.round(spring.x) - 4, Math.round(spring.x) + 4);
   spring.v = v; setTarget(t, { zeta: Math.abs(v) > 1.5 ? 0.8 : 1, response: 0.5 });
 };
 stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
-function tapCard(i) { if (Math.abs(i - spring.x) < 0.4) openCard(i); else go(i); }
+function tapCard(i) { // un clic sur n'importe quelle carte : la roue l'amène au sommet, puis sa fiche s'ouvre
+  if (Math.abs(i - spring.x) < 0.4) return openCard(i);
+  go(i, { response: 0.5 }); const t0 = performance.now();
+  const land = () => (Math.abs(spring.x - i) < 0.05 || performance.now() - t0 > 1200 ? openCard(i) : requestAnimationFrame(land)); land();
+}
 let wheelT = 0, lastStep = 0;
 addEventListener('wheel', (e) => {
   if (modalOpen()) return; e.preventDefault(); firstMove();
@@ -104,7 +108,7 @@ addEventListener('wheel', (e) => {
   clearTimeout(wheelT); wheelT = setTimeout(() => setTarget(spring.target, { response: 0.55 }), 150);
 }, { passive: false });
 addEventListener('keydown', (e) => {
-  if (contact.open || grid.open) return;
+  if (contact.open || grid.open || zoom.open) return;
   if (sheet.open) { if (e.key === 'ArrowRight') sheetStep(1); if (e.key === 'ArrowLeft') sheetStep(-1); if (e.key === 'Escape') { e.preventDefault(); closeSheet(); } return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(spring.target + 1); }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(spring.target - 1); }
@@ -127,7 +131,7 @@ function renderMedia(c) {
   const p = c.p, g = (p.gallery || []).map(full);
   const list = [...(p.panelVideo ? [{ v: p.panelVideo }] : []), ...(g.length ? g : p.panelVideo ? [] : [full(p.img)])];
   const show = (k) => { const m = list[k];
-    stageEl.innerHTML = m.v ? `<video src="${m.v}" poster="${full(p.img)}" controls autoplay muted playsinline></video>` : `<img src="${m}" alt="${p.title}">`;
+    stageEl.innerHTML = m.v ? `<video src="${m.v}" poster="${full(p.img)}" controls autoplay muted playsinline></video>` : `<img src="${m}" alt="${p.title}" class="zoomable" title="Voir en grand">`;
     if (!reduce) stageEl.firstChild.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260 });
     [...thumbs.children].forEach((b, j) => b.classList.toggle('on', j === k)); };
   thumbs.innerHTML = list.length > 1 ? list.map((m) => `<button aria-label="Voir l’image"><img src="${m.v ? full(p.img) : m}" alt="" loading="lazy" decoding="async"></button>`).join('') : '';
@@ -182,6 +186,15 @@ sheet.addEventListener('cancel', (e) => { e.preventDefault(); closeSheet(); });
 sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
 sheet.addEventListener('close', () => { if (!sheetPushed) syncHash(true); });
 $('#pPrev').addEventListener('click', () => sheetStep(-1)); $('#pNext').addEventListener('click', () => sheetStep(1));
+
+/* ---------------- image en grand ---------------- */
+const zoom = $('#zoom'), zImg = $('#zoomImg');
+$('#pStage').addEventListener('click', (e) => {
+  const im = e.target.closest('img.zoomable'); if (!im) return;
+  zImg.src = im.src; zImg.alt = im.alt; zoom.showModal();
+  if (!reduce) zImg.animate([{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.22,1,.36,1)' });
+});
+zoom.addEventListener('click', () => zoom.close());
 
 /* ---------------- adresse par carte (#slug) et retour navigateur ---------------- */
 let hashT = 0;

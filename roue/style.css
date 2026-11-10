@@ -203,3 +203,13 @@ dialog{color:var(--ink)}
   .hero__kick{left:0}.hero__l{left:0}.hero__r{right:0}
 }
 @media (min-width:861px){.hint{left:var(--gut);transform:none;bottom:22px}}
+
+/* cartes et images cliquables */
+.card{cursor:pointer}
+.stage.grabbing .card{cursor:grabbing}
+@media (hover:hover){.card:hover{filter:brightness(1.03)}}
+.sheet__stage img.zoomable{cursor:zoom-in}
+.zoom{margin:auto;max-width:96vw;max-height:94vh;border:0;background:transparent;padding:0;overflow:visible;cursor:zoom-out}
+.zoom::backdrop{background:rgba(19,18,17,.88)}
+.zoom img{display:block;max-width:96vw;max-height:94vh;object-fit:contain;border-radius:12px}
+.zoom .xbtn{position:fixed;right:16px;top:16px;background:rgba(242,236,226,.9)}
