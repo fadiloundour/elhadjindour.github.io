@@ -274,7 +274,15 @@ function renderMedia(it) {
 }
 function fillSheet(it) {
   sheetIt = it; const p = it.p;
-  $('#pLabel').textContent = `${CHAPTERS[p.ch].n} · ${p.label}`; $('#pTitle').textContent = p.title; $('#pDesc').textContent = p.desc;
+  $('#pLabel').textContent = `${CHAPTERS[p.ch].n} · ${p.label}`; $('#pTitle').textContent = p.title;
+  const c = p.cas, pc = $('#pCase'), pd = $('#pDesc'), pr = $('#pRole');
+  pd.hidden = !!c; pd.textContent = c ? '' : p.desc; pc.hidden = pr.hidden = !c;
+  if (c) {
+    pr.innerHTML = `<span>Mon rôle</span>${c.role}`;
+    pc.innerHTML = [['Contexte', c.ctx], ['Enjeu', c.pb], ['Réponse', c.sol], ['Résultat', c.res]]
+      .map(([k, v], j) => `<li${j === 3 ? ' class="res"' : ''}><b>${k}</b><p>${v}</p></li>`).join('');
+  }
+  $('#pBody').scrollTop = 0;
   $('#pTags').innerHTML = (p.tags || []).map((t) => `<span>${t}</span>`).join('');
   const l = $('#pLink'); if (p.link) { l.hidden = false; l.href = p.link; l.textContent = p.linkLabel || 'Voir le projet'; l.target = p.link.startsWith('http') ? '_blank' : '_self'; } else l.hidden = true;
   $('#pN').textContent = `${String(it.i + 1).padStart(2, '0')} / ${N}`;
@@ -283,7 +291,7 @@ function fillSheet(it) {
 const v3 = new THREE.Vector3();
 function cardScreen(it) { it.group.getWorldPosition(v3); v3.project(camera); return { x: ((v3.x + 1) / 2) * innerWidth, y: ((1 - v3.y) / 2) * innerHeight }; }
 function openSheet(it, { push = true } = {}) {
-  if (!it || sheet.open) return; go(it.i); fillSheet(it); sheet.showModal();
+  if (!it || sheet.open) return; go(it.i); fillSheet(it); sheet.showModal(); $('#pClose').focus({ preventScroll: true }); $('#pBody').scrollTop = 0; sheet.scrollTop = 0;
   if (push) { history.pushState({ sheet: 1 }, '', '#' + it.slug); sheetPushed = true; } else setHash('#' + it.slug);
   const r = sheet.getBoundingClientRect(), c = cardScreen(it);
   sheet.style.transformOrigin = `${c.x - r.left}px ${c.y - r.top}px`;

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
 </head>
 <body>
@@ -69,11 +69,13 @@
 
 <dialog class="sheet" id="sheet" aria-labelledby="pTitle">
   <div class="sheet__media"><div class="sheet__stage" id="pStage"></div><div class="sheet__thumbs" id="pThumbs"></div></div>
-  <div class="sheet__body">
+  <div class="sheet__body" id="pBody">
     <button class="sheet__x" id="pClose" aria-label="Fermer">×</button>
     <p class="kick" id="pLabel"></p>
     <h3 id="pTitle"></h3>
     <p id="pDesc"></p>
+    <p class="case__role" id="pRole" hidden></p>
+    <ol class="case" id="pCase" hidden></ol>
     <p class="tags" id="pTags"></p>
     <a class="btn btn--o" id="pLink" target="_blank" rel="noopener"></a>
     <div class="pnav"><button id="pPrev">‹ Précédent</button><span id="pN"></span><button id="pNext">Suivant ›</button></div>
@@ -107,6 +109,6 @@
 </dialog>
 
 <div class="nogl" id="nogl" hidden><p>Votre navigateur ne peut pas afficher la version 3D.</p><a class="btn btn--o" href="../">Voir le portfolio classique</a></div>
-<script type="module" src="app.js?v=5"></script>
+<script type="module" src="app.js?v=6"></script>
 </body>
 </html>

@@ -216,3 +216,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
   .g__meta b{font-size:.92rem}
 }
 @media (prefers-reduced-transparency:reduce){.pop::backdrop,.gridv::backdrop{backdrop-filter:none;background:rgba(6,6,6,.8)}}
+
+/* ===== v6 : fiches en étude de cas ===== */
+.case__role{font-size:.85rem!important;color:var(--cream);line-height:1.5!important}
+.case__role span{display:inline-block;margin-right:8px;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--mut)}
+.case{list-style:none;display:flex;flex-direction:column;gap:0;margin:2px 0 4px;border-top:1px solid var(--ln)}
+.case li{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln)}
+.case b{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--orange);padding-top:3px}
+.case p{font-size:.93rem;line-height:1.6;color:var(--text)}
+.case li.res p{color:var(--cream);font-weight:600}
+#pCase[hidden],#pRole[hidden],#pDesc[hidden]{display:none}
+@media (max-width:860px){.case li{grid-template-columns:1fr;gap:4px}}
+.sheet[open]{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+@media (max-width:860px){.sheet[open]{grid-template-columns:minmax(0,1fr)}}
