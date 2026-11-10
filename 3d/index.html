@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
 </head>
 <body>
@@ -22,7 +22,11 @@
 <header class="top">
   <button class="brand" data-go="hero" aria-label="Retour au début"><svg class="vlogo" viewBox="5.3 72.8 314.9 134.3" aria-hidden="true"><g class="nl-e"><path transform="translate(0 200) scale(0.22 -0.22)" d="M318 -12Q231 -12 167.0 26.5Q103 65 68.0 130.0Q33 195 33 274Q33 356 69.5 420.0Q106 484 168.0 521.0Q230 558 308 558Q373 558 423.0 537.5Q473 517 507.5 480.0Q542 443 560.0 394.5Q578 346 578 289Q578 273 576.5 257.5Q575 242 571 231H162V341H486L415 289Q425 332 414.0 365.5Q403 399 375.5 418.5Q348 438 308 438Q269 438 241.0 419.0Q213 400 199.0 363.0Q185 326 188 273Q184 227 199.0 192.0Q214 157 245.0 137.5Q276 118 320 118Q360 118 388.5 134.0Q417 150 433 178L553 121Q537 81 502.5 51.0Q468 21 421.0 4.5Q374 -12 318 -12Z"/></g><g class="nl-n"><path transform="translate(111.10 200) scale(0.22 -0.22)" d="M55 0V546H195V438L187 462Q206 511 248.5 534.5Q291 558 348 558Q410 558 456.5 532.0Q503 506 529.0 459.5Q555 413 555 351V0H405V319Q405 351 392.5 374.0Q380 397 357.5 410.0Q335 423 305 423Q276 423 253.0 410.0Q230 397 217.5 374.0Q205 351 205 319V0Z"/></g><g class="nl-h" style="transform-origin:256.3px 187.0px"><line class="nl-l" pathLength="1" x1="256.3" y1="187.0" x2="310.2" y2="135.3" stroke-width="2.4" stroke-linecap="round"/><circle class="nl-k" cx="310.2" cy="135.3" r="5.9"/></g><rect class="nl-d" x="243.3" y="174.0" width="26.0" height="26.0"/></svg><span>Elhadji Ndour</span></button>
   <nav class="seg" aria-label="Chapitres"><span class="seg__pill" id="segPill"></span></nav>
-  <a class="glass-btn" href="../">Version classique</a>
+  <div class="top__r">
+    <button class="glass-btn icon-btn" id="gridBtn" aria-haspopup="dialog" aria-label="Tous les projets (touche G)"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="2" y="11.5" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="11.5" width="6.5" height="6.5" rx="1.6"/></svg><span>Tous les projets</span></button>
+    <button class="glass-btn glass-btn--o" id="contactBtn" aria-haspopup="dialog">Me contacter</button>
+    <a class="glass-btn top__classic" href="../">Version classique</a>
+  </div>
 </header>
 
 <section class="ov ov--hero" data-ov="hero">
@@ -76,7 +80,33 @@
   </div>
 </dialog>
 
+<dialog class="pop" id="contactDlg" aria-labelledby="cTitle">
+  <button class="pop__x" data-close aria-label="Fermer">×</button>
+  <p class="kick">Pour toute collaboration</p>
+  <h3 id="cTitle">Parlons de votre projet<span class="o">.</span></h3>
+  <div class="pop__row"><a href="mailto:mamefadilou@gmail.com"><small>E-mail</small>mamefadilou@gmail.com</a><button class="pop__copy" id="copyMail" data-mail="mamefadilou@gmail.com"><span>Copier</span></button></div>
+  <div class="pop__two">
+    <a class="btn btn--o" href="https://wa.me/33744872742" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="btn" href="tel:+33744872742">+33 7 44 87 27 42</a>
+  </div>
+  <p class="pop__lbl">Télécharger mon CV</p>
+  <div class="pop__two">
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download>Graphiste &amp; motion</a>
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download>Communication digitale</a>
+  </div>
+  <p class="pop__links"><a href="../assets/docs/Book-Elhadji-Ndour.pdf" target="_blank" rel="noopener">Book PDF</a><a href="https://www.linkedin.com/in/fadilou-mbacke-ndour/" target="_blank" rel="noopener">LinkedIn</a><a href="https://www.behance.net/fadiloundour" target="_blank" rel="noopener">Behance</a></p>
+</dialog>
+
+<dialog class="gridv" id="gridDlg" aria-labelledby="gTitle">
+  <div class="gridv__head">
+    <div><p class="kick">Vue d’ensemble</p><h3 id="gTitle">Tous les projets</h3></div>
+    <button class="pop__x" data-close aria-label="Fermer">×</button>
+  </div>
+  <div class="gridv__chips" id="gridChips" role="group" aria-label="Filtrer par chapitre"></div>
+  <ul class="gridv__list" id="gridList"></ul>
+</dialog>
+
 <div class="nogl" id="nogl" hidden><p>Votre navigateur ne peut pas afficher la version 3D.</p><a class="btn btn--o" href="../">Voir le portfolio classique</a></div>
-<script type="module" src="app.js?v=4"></script>
+<script type="module" src="app.js?v=5"></script>
 </body>
 </html>

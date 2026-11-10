@@ -1,4 +1,4 @@
-// Portfolio 3D — Elhadji Ndour · v3
+// Portfolio 3D — Elhadji Ndour · v5
 // Mouvements à ressort interruptibles (principes « Designing Fluid Interfaces ») : la caméra suit un ressort,
 // hérite de la vitesse du geste, projette l'élan et se pose sur le projet le plus proche.
 import * as THREE from 'three';
@@ -200,7 +200,7 @@ let moved = false; const firstMove = () => { if (!moved) { moved = true; $('#hin
 /* ---------------- entrées : molette, glisser, clavier ---------------- */
 let wheelTimer = 0, lastStep = 0;
 addEventListener('wheel', (e) => {
-  if (sheet.open) return; e.preventDefault(); firstMove();
+  if (sheet.open || modalOpen()) return; e.preventDefault(); firstMove();
   let d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (e.deltaMode === 1) d *= 40;
   const discrete = e.deltaMode === 1 || (Math.abs(d) >= 50 && Number.isInteger(d) && Math.abs(d) % 10 === 0);
   if (discrete) { const now = performance.now(); if (now - lastStep > 180) { lastStep = now; setTarget(Math.round(spring.target) + Math.sign(d), { zeta: 1, response: 0.55 }); } return; }
@@ -239,6 +239,8 @@ const endDrag = (e) => {
 };
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 addEventListener('keydown', (e) => {
+  if (modalOpen()) return;
+  if (e.key === 'g' || e.key === 'G') { if (!sheet.open && !e.metaKey && !e.ctrlKey) openGrid(); return; }
   if (sheet.open) { if (e.key === 'ArrowRight') sheetStep(1); if (e.key === 'ArrowLeft') sheetStep(-1); if (e.key === 'Escape') { e.preventDefault(); closeSheet(); } return; }
   if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(Math.round(spring.target) + 1); }
   if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(Math.round(spring.target) - 1); }
@@ -258,7 +260,7 @@ const mouse = { x: 0, y: 0, in: false };
 addEventListener('pointermove', (e) => { mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = -(e.clientY / innerHeight) * 2 + 1; mouse.in = true; });
 
 /* ---------------- fiche projet (naît de la carte, repart vers elle) ---------------- */
-const sheet = $('#sheet'); let sheetIt = null, gIdx = 0;
+const sheet = $('#sheet'); let sheetIt = null, gIdx = 0, sheetPushed = false;
 function renderMedia(it) {
   const p = it.p; const g = p.gallery || []; const stage = $('#pStage'), thumbs = $('#pThumbs');
   const list = [...(p.panelVideo ? [{ v: p.panelVideo }] : []), ...(g.length ? g : p.panelVideo ? [] : [p.img])];
@@ -280,23 +282,27 @@ function fillSheet(it) {
 }
 const v3 = new THREE.Vector3();
 function cardScreen(it) { it.group.getWorldPosition(v3); v3.project(camera); return { x: ((v3.x + 1) / 2) * innerWidth, y: ((1 - v3.y) / 2) * innerHeight }; }
-function openSheet(it) {
-  if (!it) return; go(it.i); fillSheet(it); sheet.showModal();
+function openSheet(it, { push = true } = {}) {
+  if (!it || sheet.open) return; go(it.i); fillSheet(it); sheet.showModal();
+  if (push) { history.pushState({ sheet: 1 }, '', '#' + it.slug); sheetPushed = true; } else setHash('#' + it.slug);
   const r = sheet.getBoundingClientRect(), c = cardScreen(it);
   sheet.style.transformOrigin = `${c.x - r.left}px ${c.y - r.top}px`;
   if (!reduce) sheet.animate([{ opacity: 0, transform: 'scale(.62)', filter: 'blur(10px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' });
 }
 let closing = false;
-function closeSheet() {
-  if (!sheet.open || closing) return; closing = true;
+function closeSheet(fromPop) {
+  if (!sheet.open || closing) return;
+  if (sheetPushed && fromPop !== true) { sheetPushed = false; history.back(); return; } // le bouton retour du navigateur ferme aussi la fiche
+  sheetPushed = false; closing = true;
   if (reduce) { closing = false; return sheet.close(); }
   const a = sheet.animate([{ opacity: 1, transform: 'none', filter: 'blur(0)' }, { opacity: 0, transform: 'scale(.62)', filter: 'blur(10px)' }], { duration: 340, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
   a.onfinish = () => { sheet.close(); a.cancel(); closing = false; };
 }
-function sheetStep(d) { const i = (sheetIt.i + d + N) % N; go(i); fillSheet(items[i]); if (!reduce) sheet.querySelector('.sheet__body').animate([{ opacity: 0, transform: `translateX(${d * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' }); }
-$('#pClose').addEventListener('click', closeSheet);
+function sheetStep(d) { const i = (sheetIt.i + d + N) % N; go(i); fillSheet(items[i]); setHash('#' + items[i].slug); if (!reduce) sheet.querySelector('.sheet__body').animate([{ opacity: 0, transform: `translateX(${d * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+$('#pClose').addEventListener('click', () => closeSheet());
 sheet.addEventListener('cancel', (e) => { e.preventDefault(); closeSheet(); });
 sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
+sheet.addEventListener('close', () => { if (!sheetPushed) syncHash(true); });
 $('#pPrev').addEventListener('click', () => sheetStep(-1)); $('#pNext').addEventListener('click', () => sheetStep(1));
 
 /* ---------------- boucle ---------------- */
@@ -356,6 +362,7 @@ function frame() {
   const bo = smooth(-0.55, -0.2, p) * (1 - smooth(N - 0.55, N - 0.2, p)) * (sheet.open ? 0 : 1);
   const br = Math.round(bo * 1000) / 1000; css(bar, 'opacity', String(br)); css(bar, 'transform', `translate(-50%,${((1 - br) * 120).toFixed(1)}%)`); css(bar, 'pointerEvents', br > 0.6 ? 'auto' : 'none');
   const idx = clamp(Math.round(p), 0, N - 1); if (bo > 0.05) showBar(idx, idx >= lastIdx ? 1 : -1); lastIdx = idx;
+  if (!sheet.open && Math.abs(spring.v) < 0.05 && Math.abs(p - spring.target) < 0.02) syncHash();
   // chapitre actif : contrôle segmenté, teinte du fond
   const ch = p < -0.5 ? -1 : p > N - 0.5 ? 4 : items[idx].p.ch;
   segBtns.forEach((b, i) => b.classList.toggle('on', i === ch));
@@ -368,5 +375,93 @@ function frame() {
 renderer.setAnimationLoop(frame);
 document.addEventListener('visibilitychange', () => renderer.setAnimationLoop(document.hidden ? null : frame));
 addEventListener('resize', () => { camera.fov = FOV(); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); place(); });
+/* ---------------- v5 · liens par projet (#slug), retour navigateur ---------------- */
+const slugify = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+items.forEach((it) => { it.slug = slugify(it.p.title); });
+const bySlug = Object.fromEntries(items.map((it) => [it.slug, it]));
+const hashFor = (x) => { const r = Math.round(x); return r <= P_MIN ? '' : r === -1 ? '#a-propos' : r >= P_MAX ? '#contact' : '#' + items[r].slug; };
+let hashT = 0;
+function setHash(h) { if (location.hash === h || (!h && !location.hash)) return; history.replaceState(history.state, '', h || location.pathname + location.search); }
+function syncHash(now) { // remplacement différé : on n'inscrit l'adresse qu'une fois posé sur un projet
+  clearTimeout(hashT); const h = hashFor(spring.target);
+  if (now) return setHash(h); hashT = setTimeout(() => { if (!sheet.open) setHash(hashFor(spring.target)); }, 300);
+}
+addEventListener('popstate', (e) => {
+  const want = e.state && e.state.sheet;
+  if (sheet.open && !want) closeSheet(true);
+  else if (!sheet.open && want) { const it = bySlug[location.hash.slice(1)]; if (it) { openSheet(it, { push: false }); sheetPushed = true; } }
+});
+{ // arrivée par un lien partagé : on se place directement sur le projet et on ouvre sa fiche
+  const h = decodeURIComponent(location.hash.slice(1)); const it = bySlug[h];
+  const start = it ? it.i : h === 'contact' ? P_MAX : h === 'a-propos' ? -1 : null;
+  if (start !== null) {
+    spring.x = spring.target = start; spring.v = 0; moved = true; $('#hint').style.opacity = 0;
+    if (it) { const wait = () => (ready ? setTimeout(() => openSheet(it, { push: false }), 450) : setTimeout(wait, 120)); wait(); }
+  }
+}
+
+/* ---------------- v5 · fenêtres « Me contacter » et « Tous les projets » ---------------- */
+const contact = $('#contactDlg'), grid = $('#gridDlg');
+function modalOpen() { return contact.open || grid.open; }
+function materialize(dlg, from, closingOut) { // la fenêtre naît du bouton qui l'a ouverte
+  if (reduce) return null;
+  const r = dlg.getBoundingClientRect(), b = from.getBoundingClientRect();
+  dlg.style.transformOrigin = `${b.left + b.width / 2 - r.left}px ${b.top + b.height / 2 - r.top}px`;
+  const k = [{ opacity: 0, transform: 'scale(.86)', filter: 'blur(8px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }];
+  return dlg.animate(closingOut ? k.reverse() : k, { duration: closingOut ? 220 : 420, easing: closingOut ? 'cubic-bezier(.4,0,1,1)' : 'cubic-bezier(.22,1,.36,1)', fill: closingOut ? 'forwards' : 'none' });
+}
+function openDlg(dlg, from) { if (dlg.open) return; dlg._from = from; dlg.showModal(); materialize(dlg, from); }
+function closeDlg(dlg, then) {
+  if (!dlg.open || dlg._closing) return; dlg._closing = true;
+  const a = materialize(dlg, dlg._from || dlg, true);
+  const done = () => { dlg.close(); if (a) a.cancel(); dlg._closing = false; if (then) then(); };
+  if (a) a.onfinish = done; else done();
+}
+[contact, grid].forEach((d) => {
+  d.addEventListener('cancel', (e) => { e.preventDefault(); closeDlg(d); });
+  d.addEventListener('click', (e) => { if (e.target === d) closeDlg(d); });
+  d.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => closeDlg(d)));
+});
+// Me contacter
+$('#contactBtn').addEventListener('click', (e) => openDlg(contact, e.currentTarget));
+$('#copyMail').addEventListener('click', async (e) => {
+  const b = e.currentTarget, mail = b.dataset.mail; let ok = false;
+  try { await navigator.clipboard.writeText(mail); ok = true; } catch (_) {
+    const t = document.createElement('textarea'); t.value = mail; contact.appendChild(t); t.select(); try { ok = document.execCommand('copy'); } catch (__) {} t.remove();
+  }
+  b.classList.toggle('ok', ok); b.querySelector('span').textContent = ok ? 'Copié ✓' : 'Copier';
+  clearTimeout(b._t); b._t = setTimeout(() => { b.classList.remove('ok'); b.querySelector('span').textContent = 'Copier'; }, 2200);
+});
+// Tous les projets
+const gridList = $('#gridList'), chips = $('#gridChips');
+gridList.innerHTML = items.map((it) => `<li data-ch="${it.p.ch}"><button data-i="${it.i}">
+  <span class="g__img"><img src="${it.p.img}" alt="" loading="lazy" decoding="async"></span>
+  <span class="g__meta"><small>${String(it.i + 1).padStart(2, '0')} · ${it.p.label}</small><b>${it.p.title}</b></span></button></li>`).join('');
+chips.innerHTML = `<button aria-pressed="true" data-f="-1">Tout <i>${N}</i></button>` + CHAPTERS.map((c, i) =>
+  `<button aria-pressed="false" data-f="${i}"><b>${c.n}</b> ${c.title} <i>${items.filter((it) => it.p.ch === i).length}</i></button>`).join('');
+function filterGrid(f) {
+  chips.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.f === f)));
+  let k = 0;
+  gridList.querySelectorAll('li').forEach((li) => {
+    const on = f < 0 || +li.dataset.ch === f; li.hidden = !on;
+    if (on && !reduce) li.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 360, delay: Math.min(k++, 12) * 22, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
+  });
+}
+chips.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) filterGrid(+b.dataset.f); });
+function openGrid(from = $('#gridBtn')) {
+  const cur = clamp(Math.round(spring.target), 0, N - 1);
+  gridList.querySelectorAll('button').forEach((b) => b.classList.toggle('cur', +b.dataset.i === cur && spring.target > -0.5 && spring.target < N - 0.5));
+  openDlg(grid, from);
+  const c = gridList.querySelector('.cur'); if (c && !c.closest('li').hidden) c.scrollIntoView({ block: 'center' });
+}
+$('#gridBtn').addEventListener('click', (e) => openGrid(e.currentTarget));
+gridList.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-i]'); if (!b) return; const it = items[+b.dataset.i];
+  closeDlg(grid, () => { // on voyage jusqu'à la carte, puis sa fiche s'ouvre depuis elle
+    go(it.i, { zeta: 1, response: 0.7 }); const t0 = performance.now();
+    const land = () => (Math.abs(spring.x - it.i) < 0.04 || performance.now() - t0 > 1600 ? openSheet(it) : requestAnimationFrame(land)); land();
+  });
+});
+
 window.__go = (x) => { spring.x = spring.target = x; spring.v = 0; };
 window.__s = spring; window.__close = () => closeSheet();
