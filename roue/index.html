@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elhadji Ndour — Portfolio</title>
+<meta name="description" content="Le portfolio d’Elhadji Ndour : graphiste, motion designer, UX/UI et communication digitale à Paris. Faites tourner la roue des projets.">
+<meta name="theme-color" content="#f2ece2">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<header class="top">
+  <button class="brand" data-to="moi" aria-label="Revenir au début"><svg class="vlogo brand__logo" viewBox="5.3 72.8 314.9 134.3" aria-hidden="true"><g class="nl-e"><path transform="translate(0 200) scale(0.22 -0.22)" d="M318 -12Q231 -12 167.0 26.5Q103 65 68.0 130.0Q33 195 33 274Q33 356 69.5 420.0Q106 484 168.0 521.0Q230 558 308 558Q373 558 423.0 537.5Q473 517 507.5 480.0Q542 443 560.0 394.5Q578 346 578 289Q578 273 576.5 257.5Q575 242 571 231H162V341H486L415 289Q425 332 414.0 365.5Q403 399 375.5 418.5Q348 438 308 438Q269 438 241.0 419.0Q213 400 199.0 363.0Q185 326 188 273Q184 227 199.0 192.0Q214 157 245.0 137.5Q276 118 320 118Q360 118 388.5 134.0Q417 150 433 178L553 121Q537 81 502.5 51.0Q468 21 421.0 4.5Q374 -12 318 -12Z"/></g><g class="nl-n"><path transform="translate(111.10 200) scale(0.22 -0.22)" d="M55 0V546H195V438L187 462Q206 511 248.5 534.5Q291 558 348 558Q410 558 456.5 532.0Q503 506 529.0 459.5Q555 413 555 351V0H405V319Q405 351 392.5 374.0Q380 397 357.5 410.0Q335 423 305 423Q276 423 253.0 410.0Q230 397 217.5 374.0Q205 351 205 319V0Z"/></g><g class="nl-h" style="transform-origin:256.3px 187.0px"><line class="nl-l" pathLength="1" x1="256.3" y1="187.0" x2="310.2" y2="135.3" stroke-width="2.4" stroke-linecap="round"/><circle class="nl-k" cx="310.2" cy="135.3" r="5.9"/></g><rect class="nl-d" x="243.3" y="174.0" width="26.0" height="26.0"/></svg></button>
+  <div class="top__r">
+    <button class="pill pill--ghost" id="gridBtn" aria-haspopup="dialog"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="2" y="11.5" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="11.5" width="6.5" height="6.5" rx="1.6"/></svg><span>Tous les projets</span></button>
+    <button class="pill" id="contactBtn" aria-haspopup="dialog">Me contacter</button>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="h1">
+  <span class="x x--tl" aria-hidden="true"></span><span class="x x--tr" aria-hidden="true"></span><span class="x x--bl" aria-hidden="true"></span><span class="x x--br" aria-hidden="true"></span>
+  <span class="x x--ml" aria-hidden="true"></span><span class="x x--mr" aria-hidden="true"></span>
+  <p class="hero__kick">Bienvenue<br>dans mon</p>
+  <div class="hero__band" aria-hidden="true"></div>
+  <h1 class="word" id="h1" aria-label="Portfolio"><span class="l" style="--i:0"><b>P</b><i aria-hidden="true">P</i></span><span class="l" style="--i:1"><b>O</b><i aria-hidden="true">O</i></span><span class="l" style="--i:2"><b>R</b><i aria-hidden="true">R</i></span><span class="l" style="--i:3"><b>T</b><i aria-hidden="true">T</i></span><span class="l" style="--i:4"><b>F</b><i aria-hidden="true">F</i></span><span class="l" style="--i:5"><b>O</b><i aria-hidden="true">O</i></span><span class="l" style="--i:6"><b>L</b><i aria-hidden="true">L</i></span><span class="l" style="--i:7"><b>I</b><i aria-hidden="true">I</i></span><span class="l" style="--i:8"><b>O</b><i aria-hidden="true">O</i></span></h1>
+  <p class="hero__l">Elhadji Ndour · Paris</p>
+  <p class="hero__r">Graphiste · Motion · UX/UI</p>
+</section>
+
+<button class="side side--l" id="prev" aria-label="Carte précédente"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M10 0 0 6l10 6z"/></svg></button>
+<button class="side side--r" id="next" aria-label="Carte suivante"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg></button>
+
+<section class="stage" id="stage" aria-roledescription="carrousel" aria-label="Projets : glissez la roue, faites défiler ou utilisez les flèches">
+  <div class="wheel" id="wheel"></div>
+  <div class="hub" id="hub">
+    <svg class="hub__ring" id="ring" viewBox="-100 -100 200 200" aria-hidden="true">
+      <circle r="92" class="hub__dash"/>
+      <path id="ringPath" d="M -78 0 a 78 78 0 1 1 156 0 a 78 78 0 1 1 -156 0" fill="none"/>
+      <text><textPath href="#ringPath">PORTFOLIO • ELHADJI NDOUR • PORTFOLIO • ELHADJI NDOUR • </textPath></text>
+    </svg>
+    <button class="hub__btn" id="hubBtn" aria-live="polite">
+      <svg class="hub__tri" viewBox="0 0 10 8" aria-hidden="true"><path d="M5 0 10 8H0z"/></svg>
+      <b id="hubTitle">Moi</b>
+      <small id="hubSub">Qui suis-je ?</small>
+    </button>
+  </div>
+  <p class="hint" id="hint">Glissez la roue · ← →</p>
+</section>
+
+<dialog class="sheet" id="sheet" aria-labelledby="pTitle">
+  <div class="sheet__media"><div class="sheet__stage" id="pStage"></div><div class="sheet__thumbs" id="pThumbs"></div></div>
+  <div class="sheet__body" id="pBody">
+    <button class="xbtn" id="pClose" aria-label="Fermer">×</button>
+    <p class="kick" id="pLabel"></p>
+    <h2 id="pTitle"></h2>
+    <p id="pDesc"></p>
+    <p class="case__role" id="pRole" hidden></p>
+    <ol class="case" id="pCase" hidden></ol>
+    <p class="tags" id="pTags"></p>
+    <div class="sheet__cta" id="pCta"></div>
+    <div class="pnav"><button id="pPrev">‹ Précédent</button><span id="pN"></span><button id="pNext">Suivant ›</button></div>
+  </div>
+</dialog>
+
+<dialog class="pop" id="contactDlg" aria-labelledby="cTitle">
+  <button class="xbtn" data-close aria-label="Fermer">×</button>
+  <p class="kick">Pour toute collaboration</p>
+  <h2 id="cTitle">Parlons de votre projet<span class="o">.</span></h2>
+  <div class="pop__row"><a href="mailto:mamefadilou@gmail.com"><small>E-mail</small>mamefadilou@gmail.com</a><button class="pop__copy" id="copyMail" data-mail="mamefadilou@gmail.com"><span>Copier</span></button></div>
+  <div class="pop__two">
+    <a class="btn btn--o" href="https://wa.me/33744872742" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="btn" href="tel:+33744872742">+33 7 44 87 27 42</a>
+  </div>
+  <p class="pop__lbl">Télécharger mon CV</p>
+  <div class="pop__two">
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Graphiste-Motion.pdf" download>Graphiste &amp; motion</a>
+    <a class="btn" href="../assets/docs/CV-Elhadji-Ndour-Communication-Digitale.pdf" download>Communication digitale</a>
+  </div>
+  <p class="pop__links"><a href="../assets/docs/Book-Elhadji-Ndour.pdf" target="_blank" rel="noopener">Book PDF</a><a href="https://www.linkedin.com/in/fadilou-mbacke-ndour/" target="_blank" rel="noopener">LinkedIn</a><a href="https://www.behance.net/fadiloundour" target="_blank" rel="noopener">Behance</a><a href="../">Version classique</a></p>
+</dialog>
+
+<dialog class="gridv" id="gridDlg" aria-labelledby="gTitle">
+  <div class="gridv__head">
+    <div><p class="kick">Vue d’ensemble</p><h2 id="gTitle">Tous les projets</h2></div>
+    <button class="xbtn" data-close aria-label="Fermer">×</button>
+  </div>
+  <div class="gridv__chips" id="gridChips" role="group" aria-label="Filtrer par chapitre"></div>
+  <ul class="gridv__list" id="gridList"></ul>
+</dialog>
+
+<template id="logoTpl"><svg class="vlogo card__logo" viewBox="5.3 72.8 314.9 134.3" aria-hidden="true"><g class="nl-e"><path transform="translate(0 200) scale(0.22 -0.22)" d="M318 -12Q231 -12 167.0 26.5Q103 65 68.0 130.0Q33 195 33 274Q33 356 69.5 420.0Q106 484 168.0 521.0Q230 558 308 558Q373 558 423.0 537.5Q473 517 507.5 480.0Q542 443 560.0 394.5Q578 346 578 289Q578 273 576.5 257.5Q575 242 571 231H162V341H486L415 289Q425 332 414.0 365.5Q403 399 375.5 418.5Q348 438 308 438Q269 438 241.0 419.0Q213 400 199.0 363.0Q185 326 188 273Q184 227 199.0 192.0Q214 157 245.0 137.5Q276 118 320 118Q360 118 388.5 134.0Q417 150 433 178L553 121Q537 81 502.5 51.0Q468 21 421.0 4.5Q374 -12 318 -12Z"/></g><g class="nl-n"><path transform="translate(111.10 200) scale(0.22 -0.22)" d="M55 0V546H195V438L187 462Q206 511 248.5 534.5Q291 558 348 558Q410 558 456.5 532.0Q503 506 529.0 459.5Q555 413 555 351V0H405V319Q405 351 392.5 374.0Q380 397 357.5 410.0Q335 423 305 423Q276 423 253.0 410.0Q230 397 217.5 374.0Q205 351 205 319V0Z"/></g><g class="nl-h" style="transform-origin:256.3px 187.0px"><line class="nl-l" pathLength="1" x1="256.3" y1="187.0" x2="310.2" y2="135.3" stroke-width="2.4" stroke-linecap="round"/><circle class="nl-k" cx="310.2" cy="135.3" r="5.9"/></g><rect class="nl-d" x="243.3" y="174.0" width="26.0" height="26.0"/></svg></template>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
