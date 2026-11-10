@@ -16,13 +16,13 @@ const damp = (c, t, l, dt) => c + (t - c) * (1 - Math.exp(-l * dt));
 const P_MIN = -2, P_MAX = N;                 // -2 accueil · -1 présentation · 0..N-1 projets · N contact
 
 /* ---------------- ressort (amortissement + réponse, comme UIKit) ---------------- */
-const spring = { x: P_MIN, v: 0, target: P_MIN, zeta: 1, response: 0.55 };
+const spring = { x: P_MIN, v: 0, target: P_MIN, zeta: 1, response: 0.62 };
 function stepSpring(dt) {
   const w = (2 * Math.PI) / (reduce ? 0.18 : spring.response), k = w * w, c = 2 * spring.zeta * w;
   const n = Math.ceil(dt / (1 / 240)); const h = dt / n;
   for (let i = 0; i < n; i++) { const a = -k * (spring.x - spring.target) - c * spring.v; spring.v += a * h; spring.x += spring.v * h; }
 }
-function setTarget(t, { zeta = 1, response = 0.55 } = {}) { spring.target = clamp(t, P_MIN, P_MAX); spring.zeta = zeta; spring.response = response; }
+function setTarget(t, { zeta = 1, response = 0.62 } = {}) { spring.target = clamp(t, P_MIN, P_MAX); spring.zeta = zeta; spring.response = response; }
 const rubber = (x) => { // élastique aux extrémités
   if (x < P_MIN) { const o = P_MIN - x; return P_MIN - (o * 0.55) / (1 + 0.55 * o); }
   if (x > P_MAX) { const o = x - P_MAX; return P_MAX + (o * 0.55) / (1 + 0.55 * o); }
@@ -30,7 +30,7 @@ const rubber = (x) => { // élastique aux extrémités
 };
 
 /* ---------------- WebGL ---------------- */
-const canvas = $('#gl');
+const canvas = $('#gl'); canvas.setAttribute('role', 'img');
 let renderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
 catch (e) { $('#nogl').hidden = false; $('#loader').classList.add('done'); throw e; }
@@ -56,7 +56,15 @@ let ready = false, introT0 = 0;
 const finish = () => { if (ready) return; ready = true; $('#loader').classList.add('done'); introT0 = clock.elapsedTime; $('#hint').style.opacity = 1; };
 manager.onLoad = () => setTimeout(finish, 200);
 setTimeout(finish, 6000);
+const bmpOK = typeof createImageBitmap === 'function' && !/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const bmpLoader = new THREE.ImageBitmapLoader(manager); bmpLoader.setOptions({ imageOrientation: 'flipY', premultiplyAlpha: 'none' });
 const texLoader = new THREE.TextureLoader(manager);
+// image décodée hors du fil principal puis envoyée au GPU dès le chargement : aucune saccade quand la carte apparaît
+function loadTex(url, cb) {
+  const done = (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy()); renderer.initTexture(t); cb(t); };
+  if (bmpOK) bmpLoader.load(url, (bmp) => { const t = new THREE.Texture(bmp); t.flipY = false; t.needsUpdate = true; t.userData.w = bmp.width; t.userData.h = bmp.height; done(t); }, undefined, () => texLoader.load(url, (t) => { t.userData.w = t.image.width; t.userData.h = t.image.height; done(t); }));
+  else texLoader.load(url, (t) => { t.userData.w = t.image.width; t.userData.h = t.image.height; done(t); });
+}
 
 /* ---------------- logo « en. » en volume ---------------- */
 const LG = { cx: 256.3, cy: 187.02, hx: 310.2, hy: 135.32, r: 5.94, sw: 2.42, left: 7.26, right: 316.14, top: 76.8, bottom: 200 };
@@ -136,10 +144,9 @@ PROJECTS.forEach((p, i) => {
     const vt = new THREE.VideoTexture(v); vt.colorSpace = THREE.SRGBColorSpace; it.video = v; it.vtex = vt;
     v.addEventListener('loadedmetadata', () => setSize(v.videoWidth / v.videoHeight));
   }
-  texLoader.load(p.img, (t) => {
-    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    if (!mat.map) { mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true; }
-    if (!p.video) setSize(t.image.width / t.image.height);
+  loadTex(p.img, (t) => {
+    if (!mat.map) { mat.map = t; mat.color.set(0x1e1c1a); mat.needsUpdate = true; it.fadeIn = 0; }
+    if (!p.video) setSize(t.userData.w / t.userData.h);
   });
   items.push(it); z -= GAP;
 });
@@ -198,8 +205,8 @@ addEventListener('wheel', (e) => {
   const discrete = e.deltaMode === 1 || (Math.abs(d) >= 50 && Number.isInteger(d) && Math.abs(d) % 10 === 0);
   if (discrete) { const now = performance.now(); if (now - lastStep > 180) { lastStep = now; setTarget(Math.round(spring.target) + Math.sign(d), { zeta: 1, response: 0.55 }); } return; }
   // pavé tactile : suivi direct (1:1), puis on se pose sur le projet le plus proche
-  spring.target = clamp(spring.target + d / (isSmall() ? 420 : 520), P_MIN - 0.3, P_MAX + 0.3); spring.zeta = 1; spring.response = 0.32;
-  clearTimeout(wheelTimer); wheelTimer = setTimeout(() => setTarget(Math.round(spring.target), { zeta: 1, response: 0.5 }), 130);
+  spring.target = clamp(spring.target + d / (isSmall() ? 420 : 520), P_MIN - 0.3, P_MAX + 0.3); spring.zeta = 1; spring.response = 0.42;
+  clearTimeout(wheelTimer); wheelTimer = setTimeout(() => setTarget(Math.round(spring.target), { zeta: 1, response: 0.6 }), 160);
 }, { passive: false });
 const drag = { on: false, active: false, id: 0, x0: 0, y0: 0, p0: 0, axis: null, hist: [] };
 const pxPerItem = () => (drag.axis === 'x' ? innerWidth * 0.42 : innerHeight * 0.38);
@@ -232,15 +239,15 @@ const endDrag = (e) => {
 };
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 addEventListener('keydown', (e) => {
-  if (sheet.open) { if (e.key === 'ArrowRight') sheetStep(1); if (e.key === 'ArrowLeft') sheetStep(-1); return; }
+  if (sheet.open) { if (e.key === 'ArrowRight') sheetStep(1); if (e.key === 'ArrowLeft') sheetStep(-1); if (e.key === 'Escape') { e.preventDefault(); closeSheet(); } return; }
   if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(Math.round(spring.target) + 1); }
   if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(Math.round(spring.target) - 1); }
   if (e.key === 'Home') go(P_MIN); if (e.key === 'End') go(P_MAX);
   if (e.key === 'Enter' && spring.x > -0.4 && spring.x < N - 0.6) openSheet(items[Math.round(spring.x)]);
 });
-const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2(); const meshes = items.map((it) => it.mesh);
 function pick(x, y) { ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
-  const hit = ray.intersectObjects(items.filter((it) => it.mesh.visible && it.mat.opacity > 0.4).map((it) => it.mesh))[0]; return hit ? items.find((it) => it.mesh === hit.object) : null; }
+  const hits = ray.intersectObjects(meshes); for (const h of hits) { const it = items[meshes.indexOf(h.object)]; if (it.group.visible && it.mat.opacity > 0.4) return it; } return null; }
 function tap(x, y) {
   const it = pick(x, y);
   if (it) { if (Math.abs(it.i - spring.x) < 0.35) openSheet(it); else go(it.i); return; }
@@ -259,7 +266,7 @@ function renderMedia(it) {
     stage.innerHTML = m.v ? `<video src="${m.v}" poster="${p.img}" controls autoplay muted playsinline></video>` : `<img src="${m}" alt="${p.title}">`;
     if (!reduce) stage.firstChild.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260 });
     [...thumbs.children].forEach((b, j) => b.classList.toggle('on', j === k)); };
-  thumbs.innerHTML = list.length > 1 ? list.map((m) => `<button aria-label="Voir l’image"><img src="${m.v ? p.img : m}" alt=""></button>`).join('') : '';
+  thumbs.innerHTML = list.length > 1 ? list.map((m) => `<button aria-label="Voir l’image"><img src="${m.v ? p.img : m}" alt="" loading="lazy" decoding="async"></button>`).join('') : '';
   [...thumbs.children].forEach((b, j) => b.addEventListener('click', () => show(j)));
   show(0);
 }
@@ -279,11 +286,12 @@ function openSheet(it) {
   sheet.style.transformOrigin = `${c.x - r.left}px ${c.y - r.top}px`;
   if (!reduce) sheet.animate([{ opacity: 0, transform: 'scale(.62)', filter: 'blur(10px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' });
 }
+let closing = false;
 function closeSheet() {
-  if (!sheet.open) return;
-  if (reduce) return sheet.close();
+  if (!sheet.open || closing) return; closing = true;
+  if (reduce) { closing = false; return sheet.close(); }
   const a = sheet.animate([{ opacity: 1, transform: 'none', filter: 'blur(0)' }, { opacity: 0, transform: 'scale(.62)', filter: 'blur(10px)' }], { duration: 340, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
-  a.onfinish = () => { sheet.close(); a.cancel(); };
+  a.onfinish = () => { sheet.close(); a.cancel(); closing = false; };
 }
 function sheetStep(d) { const i = (sheetIt.i + d + N) % N; go(i); fillSheet(items[i]); if (!reduce) sheet.querySelector('.sheet__body').animate([{ opacity: 0, transform: `translateX(${d * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' }); }
 $('#pClose').addEventListener('click', closeSheet);
@@ -297,10 +305,17 @@ const TINTS = ['#3a2614', '#14516a', '#4a1215', '#0f3a52'];
 const tint = new THREE.Color('#14516a'), tintT = new THREE.Color();
 const camPos = new THREE.Vector3(), look = new THREE.Vector3(), tmp = new THREE.Vector3();
 const par = { x: 0, y: 0 }; let lastIdx = -1;
-const bg = $('#bg'), bgTint = $('#bgTint');
-function ov(el, o, base) { el.style.opacity = o.toFixed(3); el.style.transform = `${base} translateY(${(1 - o) * 16}px)`; el.classList.toggle('live', o > 0.6); }
+const bg = $('#bg'), bgTint = $('#bgTint'), railFill = $('#railFill'), railA = $('#railA');
+const css = (el, k, v) => { const c = el.__c || (el.__c = {}); if (c[k] !== v) { c[k] = v; el.style[k] = v; } };
+function ov(el, o, base) { const r = Math.round(o * 1000) / 1000; css(el, 'opacity', String(r)); css(el, 'transform', `${base} translateY(${((1 - r) * 16).toFixed(1)}px)`); css(el, 'pointerEvents', r > 0.6 ? 'auto' : 'none'); }
+const MAX_DPR = Math.min(devicePixelRatio, isSmall() ? 1.5 : 1.75); let dpr = MAX_DPR, ftAvg = 1 / 60, ftN = 0;
+function adapt(dt) { // garde 60 i/s : baisse la résolution si l'appareil peine, la remonte s'il est à l'aise
+  ftAvg = ftAvg * 0.95 + dt * 0.05; if (++ftN < 90) return; ftN = 0;
+  if (ftAvg > 1 / 45 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); }
+  else if (ftAvg < 1 / 58 && dpr < MAX_DPR) { dpr = Math.min(MAX_DPR, dpr + 0.25); renderer.setPixelRatio(dpr); }
+}
 function frame() {
-  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime; adapt(dt);
   if (!drag.active) stepSpring(dt);
   const p = spring.x;
   at(camCurve, p, camPos); at(lookCurve, p, look);
@@ -318,7 +333,7 @@ function frame() {
   if (logoEnd) { const et = Math.max(0, (p - (N - 0.7)) / 0.7 * 2.4); animLogo(logoEnd, reduce ? 9 : et, lt); logoEnd.visible = p > N - 1; logoEnd.rotation.y = Math.sin(t * 0.4) * 0.12 + par.x * 0.3; }
   // cartes
   const hov = !isTouch && !drag.active && !sheet.open && mouse.in ? pick((mouse.x + 1) / 2 * innerWidth, (1 - mouse.y) / 2 * innerHeight) : null;
-  canvas.style.cursor = drag.active ? '' : hov ? 'pointer' : '';
+  css(canvas, 'cursor', drag.active ? '' : hov ? 'pointer' : '');
   items.forEach((it) => {
     const d = it.i - p, ad = Math.abs(d);
     const o = d < 0 ? clamp(1 + (d + 0.3) / 0.45) : 1 - smooth(5, 7.5, d);   // la carte dépassée s'efface avant de traverser la caméra
@@ -326,7 +341,10 @@ function frame() {
     it.hover = damp(it.hover, it === hov ? 1 : 0, 10, dt);
     it.pressS = damp(it.pressS || 0, it.press, 18, dt);
     it.group.rotation.y = -it.side * Math.min(1, ad) * 0.28 + (it === hov ? par.x * 0.08 : 0);
-    it.group.rotation.x = it === hov ? -par.y * 0.06 : 0;
+    const lean = clamp(spring.v * 0.035, -0.12, 0.12);
+    it.group.rotation.x = (it === hov ? -par.y * 0.06 : 0) + lean * 0.6;
+    it.group.position.z = it.z - Math.abs(lean) * 0.25;
+    if (it.fadeIn !== undefined && it.fadeIn < 1) { it.fadeIn = Math.min(1, it.fadeIn + dt / 0.45); it.mat.color.setScalar(0.12 + 0.88 * (1 - Math.pow(1 - it.fadeIn, 3))); }
     it.group.scale.setScalar((1 - Math.min(1, ad) * 0.04) * (1 + it.hover * 0.025) * (1 - it.pressS * 0.03));
     it.anchor.rotation.set(t * 0.7 + it.i, t * 0.5, 0);
     if (it.video) { const near = ad < 2.5; if (near && it.video.paused) it.video.play().then(() => { it.mat.map = it.vtex; it.mat.needsUpdate = true; }).catch(() => {}); else if (!near && !it.video.paused) it.video.pause(); }
@@ -336,15 +354,15 @@ function frame() {
   ov(OV.about, 1 - smooth(0.22, 0.55, Math.abs(p + 1)), isSmall() ? '' : 'translateY(-50%)');
   ov(OV.end, smooth(N - 0.45, N - 0.08, p), 'translate(-50%,-50%)');
   const bo = smooth(-0.55, -0.2, p) * (1 - smooth(N - 0.55, N - 0.2, p)) * (sheet.open ? 0 : 1);
-  bar.style.opacity = bo.toFixed(3); bar.style.transform = `translate(-50%,${(1 - bo) * 120}%)`; bar.style.pointerEvents = bo > 0.6 ? 'auto' : 'none';
+  const br = Math.round(bo * 1000) / 1000; css(bar, 'opacity', String(br)); css(bar, 'transform', `translate(-50%,${((1 - br) * 120).toFixed(1)}%)`); css(bar, 'pointerEvents', br > 0.6 ? 'auto' : 'none');
   const idx = clamp(Math.round(p), 0, N - 1); if (bo > 0.05) showBar(idx, idx >= lastIdx ? 1 : -1); lastIdx = idx;
   // chapitre actif : contrôle segmenté, teinte du fond
   const ch = p < -0.5 ? -1 : p > N - 0.5 ? 4 : items[idx].p.ch;
   segBtns.forEach((b, i) => b.classList.toggle('on', i === ch));
-  const ab = segBtns[ch]; if (ab && seg.offsetParent) { pillS.x = damp(pillS.x, ab.offsetLeft, 12, dt); pillS.w = damp(pillS.w, ab.offsetWidth, 12, dt); pill.style.transform = `translateX(${pillS.x}px)`; pill.style.width = `${pillS.w}px`; pill.style.opacity = 1; } else pill.style.opacity = 0;
-  tintT.set(ch >= 0 && ch < 4 ? TINTS[ch] : '#14516a'); tint.lerp(tintT, 1 - Math.exp(-2 * dt)); bgTint.style.background = `#${tint.getHexString()}`;
-  const fr = (p - P_MIN) / (P_MAX - P_MIN); $('#railFill').style.height = `${fr * 100}%`; $('#railA').style.top = `${fr * 100}%`;
-  bg.style.transform = `translate(${-par.x * 12}px,${par.y * 8 - fr * 30}px)`;
+  const ab = segBtns[ch]; if (ab && seg.offsetParent) { pillS.x = damp(pillS.x, ab.offsetLeft, 12, dt); pillS.w = damp(pillS.w, ab.offsetWidth, 12, dt); css(pill, 'transform', `translateX(${pillS.x.toFixed(1)}px)`); css(pill, 'width', `${pillS.w.toFixed(1)}px`); css(pill, 'opacity', '1'); } else css(pill, 'opacity', '0');
+  tintT.set(ch >= 0 && ch < 4 ? TINTS[ch] : '#14516a'); tint.lerp(tintT, 1 - Math.exp(-2 * dt)); css(bgTint, 'background', `#${tint.getHexString()}`);
+  const fr = (p - P_MIN) / (P_MAX - P_MIN); css(railFill, 'height', `${(fr * 100).toFixed(2)}%`); css(railA, 'top', `${(fr * 100).toFixed(2)}%`);
+  css(bg, 'transform', `translate3d(${(-par.x * 12).toFixed(1)}px,${(par.y * 8 - fr * 30).toFixed(1)}px,0)`);
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(frame);

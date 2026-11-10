@@ -146,3 +146,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
   .bar,.seg,.sheet{border-color:rgba(242,236,226,.5)}
   .bg img{opacity:.1}
 }
+
+/* ===== v4 : tokens de mouvement, focus visible, cibles tactiles ===== */
+:root{--dur-fast:160ms;--dur-base:280ms;--dur-slow:520ms;--ease-out:cubic-bezier(.22,1,.36,1);--ease-in:cubic-bezier(.4,0,1,1)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:12px}
+.cta:focus-visible,.bar__open:focus-visible,.btn--o:focus-visible{outline-color:#fff}
+.seg button{min-height:40px}
+.bar__nav,.bar__open,.sheet__x,.glass-btn,.btn,.cta{min-height:44px}
+.sheet__x{min-width:44px;min-height:44px}
+.bar__nav,.bar__open,.btn,.glass-btn,.cta,.seg button{transition:transform var(--dur-fast) var(--ease-out),background var(--dur-base) var(--ease-out),border-color var(--dur-base),color var(--dur-base)}
+.bar__open:hover{filter:brightness(1.08)}
+.loader{transition:transform var(--dur-slow) var(--ease-out)}
+#gl{will-change:transform}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:1ms!important;animation-duration:1ms!important}}
